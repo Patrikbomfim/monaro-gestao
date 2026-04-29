@@ -113,10 +113,33 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
   <p>Conectando ao banco de dados...</p>
 </div>
 
+<div class="loading-screen" id="login-screen" style="display:none">
+  <div class="logo-big"><div class="dot"></div>Monaro Engenharia</div>
+  <div style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;width:100%;max-width:360px;margin-top:1rem">
+    <div style="font-size:13px;color:#aaa;margin-bottom:1.5rem;text-align:center">Acesso restrito — faça login para continuar</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px">E-mail</label>
+      <input id="login-email" type="email" placeholder="seu@email.com"
+        style="width:100%;font-family:inherit;font-size:13px;padding:9px 12px;border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none;" />
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <label style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px">Senha</label>
+      <input id="login-senha" type="password" placeholder="••••••••"
+        style="width:100%;font-family:inherit;font-size:13px;padding:9px 12px;border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none;" />
+    </div>
+    <button onclick="fazerLogin()" id="login-btn"
+      style="width:100%;font-family:inherit;font-size:13px;font-weight:600;padding:10px;border:none;border-radius:8px;background:#E85D26;color:#fff;cursor:pointer;">
+      Entrar
+    </button>
+    <div id="login-erro" style="font-size:12px;color:#F09595;text-align:center;margin-top:12px;display:none">E-mail ou senha incorretos.</div>
+  </div>
+</div>
+
 <div class="header">
   <div class="logo"><div class="logo-dot"></div>Monaro Engenharia</div>
   <div class="header-right">
     <div class="sync-status"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-text">Sincronizado</span></div>
+    <button onclick="fazerLogout()" style="font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.2);background:transparent;color:#bbb;font-size:12px;cursor:pointer;">Sair</button>
     <div class="nav">
       <button class="nav-btn active" onclick="switchTab('servicos')">Serviços</button>
       <button class="nav-btn" onclick="switchTab('agenda')">Agenda</button>
@@ -361,7 +384,48 @@ async function salvarServico(){
     }
     setSyncStatus('ok');
     fecharModal('modal-s');
+    await // ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
     await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 
@@ -372,7 +436,48 @@ async function excluirServico(){
   await sb.from('servicos').delete().eq('id',servicos[editSIdx].id);
   setSyncStatus('ok');
   fecharModal('modal-s');
-  await carregarTudo();
+  await // ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
+    await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();
 }
 
 // ── AUTOCOMPLETE ──────────────────────────────────────────
@@ -423,7 +528,48 @@ async function salvarCompromisso(){
   try{
     if(editCIdx!==null){await sb.from('compromissos').update(dados).eq('id',compromissos[editCIdx].id);}
     else{await sb.from('compromissos').insert(dados);}
-    setSyncStatus('ok');fecharModal('modal-c');await carregarTudo();
+    setSyncStatus('ok');fecharModal('modal-c');await // ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
+    await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 
@@ -431,7 +577,48 @@ async function excluirCompromisso(){
   if(editCIdx===null)return;
   if(!confirm('Excluir este compromisso?'))return;
   await sb.from('compromissos').delete().eq('id',compromissos[editCIdx].id);
-  setSyncStatus('ok');fecharModal('modal-c');await carregarTudo();
+  setSyncStatus('ok');fecharModal('modal-c');await // ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
+    await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();
 }
 
 // ── FUNCIONÁRIOS ──────────────────────────────────────────
@@ -483,7 +670,48 @@ async function salvarFunc(){
     } else {
       await sb.from('funcionarios').insert({nome,funcao});
     }
-    setSyncStatus('ok');fecharModal('modal-f');await carregarTudo();renderFuncionarios();
+    setSyncStatus('ok');fecharModal('modal-f');await // ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
+    await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();renderFuncionarios();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 
@@ -492,7 +720,48 @@ async function excluirFunc(){
   const nome=funcionarios[editFIdx].nome;
   if(servicos.some(s=>(s.funcs||[]).includes(nome)&&s.status!=='concluido')&&!confirm(`${nome} tem serviços ativos. Excluir mesmo assim?`))return;
   await sb.from('funcionarios').delete().eq('id',funcionarios[editFIdx].id);
-  setSyncStatus('ok');fecharModal('modal-f');await carregarTudo();renderFuncionarios();
+  setSyncStatus('ok');fecharModal('modal-f');await // ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
+    await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();renderFuncionarios();
 }
 
 // ── AGENDA / GANTT ────────────────────────────────────────
@@ -587,7 +856,48 @@ function switchTab(tab){
 
 ['modal-s','modal-c','modal-f'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fecharModal(id);});});
 
-carregarTudo();
+// ── AUTH ─────────────────────────────────────────────────
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loading').style.display='none';
+    await carregarTudo();
+  } else {
+    document.getElementById('loading').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+}
+
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');
+  const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const {error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    await carregarTudo();
+  }
+}
+
+async function fazerLogout(){
+  if(!confirm('Deseja sair do sistema?'))return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// Enter key on login
+document.getElementById('login-senha').addEventListener('keydown',function(e){
+  if(e.key==='Enter')fazerLogin();
+});
+document.getElementById('login-email').addEventListener('keydown',function(e){
+  if(e.key==='Enter')document.getElementById('login-senha').focus();
+});
+
+iniciar();
 </script>
 </body>
 </html>
