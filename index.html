@@ -21,10 +21,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .nav-btn.active{background:rgba(255,255,255,0.12);color:#fff;}
 .sync-status{font-size:11px;color:#aaa;display:flex;align-items:center;gap:5px;}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:#aaa;}
-.sync-dot.ok{background:#4CAF50;}
-.sync-dot.err{background:#F44336;}
-.sync-dot.loading{background:#FFC107;animation:pulse 1s infinite;}
+.sync-dot.ok{background:#4CAF50;}.sync-dot.err{background:#F44336;}.sync-dot.loading{background:#FFC107;animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+@keyframes spin{to{transform:rotate(360deg);}}
 .content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
 .main{padding:1.5rem 2rem;max-width:1600px;width:100%;margin:0 auto;flex-shrink:0;}
 #view-agenda{display:none;flex:1;flex-direction:column;overflow:hidden;}
@@ -54,7 +53,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .metric{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;}
 .metric-label{font-size:12px;color:var(--text2);margin-bottom:6px;}
 .metric-value{font-size:26px;font-weight:500;line-height:1;}
-.alert{background:var(--amber-light);border:0.5px solid #EF9F27;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.alert{background:var(--amber-light);border:0.5px solid #EF9F27;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.alert-red{background:var(--red-light);border:0.5px solid #F09595;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
 .toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
 .toolbar input,.toolbar select{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
 .toolbar input{flex:1;min-width:160px;}
@@ -63,6 +63,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-primary{background:var(--orange);color:#fff;border-color:var(--orange);}
 .btn-primary:hover{background:var(--orange-dark);}
 .btn-danger{background:var(--red-light);color:var(--red);border-color:#F09595;}
+.btn-dup{background:#E6F1FB;color:var(--blue);border-color:#85B7EB;}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
 th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;border-bottom:0.5px solid var(--border);background:var(--bg);}
@@ -93,6 +94,7 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 .form-row{margin-bottom:12px;}
 .form-row label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.03em;}
 .form-row input,.form-row select{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
+.form-row input.invalid{border-color:var(--red);}
 .form-actions{display:flex;gap:8px;margin-top:1.25rem;justify-content:flex-end;}
 .section-title{font-size:13px;font-weight:600;color:var(--text2);margin:1.25rem 0 0.75rem;text-transform:uppercase;letter-spacing:0.04em;}
 .comp-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius);margin-bottom:6px;font-size:13px;cursor:pointer;}
@@ -102,7 +104,15 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 .loading-screen .dot{width:10px;height:10px;border-radius:50%;background:var(--orange);}
 .loading-screen p{color:#aaa;font-size:13px;}
 .spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+/* QUADRO DE OBRAS */
+.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+.kanban-col{background:var(--surface2);border-radius:var(--radius-lg);padding:12px;}
+.kanban-col-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.kanban-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;cursor:pointer;font-size:13px;}
+.kanban-card:hover{border-color:var(--border2);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.kanban-card-name{font-weight:500;margin-bottom:4px;}
+.kanban-card-warn{font-size:11px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -119,18 +129,13 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <div style="font-size:13px;color:#aaa;margin-bottom:1.5rem;text-align:center">Acesso restrito — faça login para continuar</div>
     <div style="margin-bottom:12px">
       <label style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px">E-mail</label>
-      <input id="login-email" type="email" placeholder="seu@email.com"
-        style="width:100%;font-family:inherit;font-size:13px;padding:9px 12px;border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none;" />
+      <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;font-family:inherit;font-size:13px;padding:9px 12px;border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none;" />
     </div>
     <div style="margin-bottom:1.5rem">
       <label style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px">Senha</label>
-      <input id="login-senha" type="password" placeholder="••••••••"
-        style="width:100%;font-family:inherit;font-size:13px;padding:9px 12px;border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none;" />
+      <input id="login-senha" type="password" placeholder="••••••••" style="width:100%;font-family:inherit;font-size:13px;padding:9px 12px;border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none;" />
     </div>
-    <button onclick="fazerLogin()" id="login-btn"
-      style="width:100%;font-family:inherit;font-size:13px;font-weight:600;padding:10px;border:none;border-radius:8px;background:#E85D26;color:#fff;cursor:pointer;">
-      Entrar
-    </button>
+    <button onclick="fazerLogin()" id="login-btn" style="width:100%;font-family:inherit;font-size:13px;font-weight:600;padding:10px;border:none;border-radius:8px;background:#E85D26;color:#fff;cursor:pointer;">Entrar</button>
     <div id="login-erro" style="font-size:12px;color:#F09595;text-align:center;margin-top:12px;display:none">E-mail ou senha incorretos.</div>
   </div>
 </div>
@@ -141,7 +146,8 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <div class="sync-status"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-text">Sincronizado</span></div>
     <button onclick="fazerLogout()" style="font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.2);background:transparent;color:#bbb;font-size:12px;cursor:pointer;">Sair</button>
     <div class="nav">
-      <button class="nav-btn active" onclick="switchTab('servicos')">Serviços</button>
+      <button class="nav-btn active" onclick="switchTab('quadro')">Quadro</button>
+      <button class="nav-btn" onclick="switchTab('servicos')">Serviços</button>
       <button class="nav-btn" onclick="switchTab('agenda')">Agenda</button>
       <button class="nav-btn" onclick="switchTab('funcionarios')">Funcionários</button>
     </div>
@@ -149,7 +155,17 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 </div>
 
 <div class="content" id="content-wrap">
-  <div class="main" id="view-servicos">
+  <!-- QUADRO DE OBRAS -->
+  <div class="main" id="view-quadro">
+    <div id="alertas-quadro"></div>
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="abrirObra()">+ Nova obra</button>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </div>
+
+  <!-- SERVIÇOS -->
+  <div class="main" id="view-servicos" style="display:none">
     <div class="metrics" id="metrics-s"></div>
     <div id="alert-s"></div>
     <div class="toolbar">
@@ -168,12 +184,13 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th style="width:19%">Obra</th>
-          <th style="width:23%">Serviço</th>
-          <th style="width:22%">Funcionários</th>
-          <th style="width:11%">Início</th>
-          <th style="width:11%">Fim</th>
-          <th style="width:14%">Status</th>
+          <th style="width:17%">Obra</th>
+          <th style="width:21%">Serviço</th>
+          <th style="width:20%">Funcionários</th>
+          <th style="width:10%">Início</th>
+          <th style="width:10%">Fim</th>
+          <th style="width:12%">Status</th>
+          <th style="width:10%">Ações</th>
         </tr></thead>
         <tbody id="tbody-s"></tbody>
       </table>
@@ -182,12 +199,14 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <div id="lista-comp"></div>
   </div>
 
+  <!-- FUNCIONÁRIOS -->
   <div class="main" id="view-funcionarios" style="display:none">
     <div class="toolbar"><button class="btn btn-primary" onclick="abrirFunc()">+ Novo funcionário</button></div>
     <div class="func-grid" id="func-grid"></div>
   </div>
 </div>
 
+<!-- AGENDA -->
 <div id="view-agenda">
   <div class="agenda-top">
     <div class="metrics" id="metrics-a"></div>
@@ -200,12 +219,38 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
   </div>
 </div>
 
+<!-- Modal Obra -->
+<div class="overlay" id="modal-o">
+  <div class="modal">
+    <h3 id="mo-titulo">Nova obra</h3>
+    <div class="form-row"><label>Nome da obra</label><input id="mo-nome" placeholder="Ex: Ed. Flamboyant" /></div>
+    <div class="form-row"><label>Status</label>
+      <select id="mo-status">
+        <option value="aberto">Aberto</option>
+        <option value="encaminhado">Encaminhado</option>
+        <option value="aprovado">Aprovado</option>
+        <option value="executando">Executando</option>
+        <option value="finalizado">Finalizado</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-danger" id="mo-excluir" style="display:none;margin-right:auto" onclick="excluirObra()">Excluir</button>
+      <button class="btn" onclick="fecharModal('modal-o')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarObra()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Serviço -->
 <div class="overlay" id="modal-s">
   <div class="modal">
     <h3 id="ms-titulo">Novo serviço</h3>
-    <div class="form-row"><label>Obra</label><input id="ms-obra" placeholder="Ex: Ed. Ile de France" /></div>
-    <div class="form-row"><label>Serviço</label><input id="ms-servico" placeholder="Ex: Pintura fachada lateral" /></div>
+    <div class="form-row"><label>Obra</label>
+      <select id="ms-obra-sel">
+        <option value="">— selecione uma obra —</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Serviço</label><input id="ms-servico" placeholder="Ex: Pintura fachada — Bloco 01" /></div>
     <div class="form-row">
       <label>Funcionários — digite e pressione Enter</label>
       <div class="multi-wrap">
@@ -265,24 +310,15 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 </div>
 
 <script>
-const SUPABASE_URL = 'https://qxhvnpippvlobkzjyhto.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_A9jCcn7_6dJ-sqp1Pum4rw_vsBwVCr7';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+const SUPABASE_URL='https://qxhvnpippvlobkzjyhto.supabase.co';
+const SUPABASE_KEY='sb_publishable_A9jCcn7_6dJ-sqp1Pum4rw_vsBwVCr7';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const CORES=['#E85D26','#185FA5','#0F6E56','#854F0B','#534AB7','#993556','#3B6D11','#A32D2D','#0C447C','#633806'];
 const DW=28;
 
-let funcionarios=[], servicos=[], compromissos=[];
-let editSIdx=null, editCIdx=null, editFIdx=null;
+let obras=[], funcionarios=[], servicos=[], compromissos=[];
+let editOIdx=null, editSIdx=null, editCIdx=null, editFIdx=null;
 let selFuncs=[];
-
-// ── SYNC STATUS ───────────────────────────────────────────
-function setSyncStatus(state){
-  const dot=document.getElementById('sync-dot');
-  const txt=document.getElementById('sync-text');
-  dot.className='sync-dot '+state;
-  txt.textContent=state==='ok'?'Sincronizado':state==='loading'?'Salvando...':'Erro ao salvar';
-}
 
 // ── HELPERS ───────────────────────────────────────────────
 function corFunc(nome){const i=funcionarios.findIndex(f=>f.nome===nome);return CORES[(i>=0?i:0)%CORES.length];}
@@ -291,23 +327,124 @@ function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/
 function statusLabel(s){return{'sem-agenda':'Sem agenda','agendado':'Agendado','execucao':'Em execução','concluido':'Concluído','ausente':'Ausente'}[s]||s;}
 function badgeClass(s){return{'sem-agenda':'b-sem','agendado':'b-agendado','execucao':'b-execucao','concluido':'b-concluido','ausente':'b-ausente'}[s]||'';}
 function fecharModal(id){document.getElementById(id).classList.remove('open');}
+function setSyncStatus(state){const dot=document.getElementById('sync-dot');const txt=document.getElementById('sync-text');dot.className='sync-dot '+state;txt.textContent=state==='ok'?'Sincronizado':state==='loading'?'Salvando...':'Erro ao salvar';}
 
-// ── CARREGAR DADOS ────────────────────────────────────────
+// Validate date - check if date string is truly valid
+function dateValida(str){
+  if(!str)return true; // empty is ok
+  const d=new Date(str+'T12:00:00');
+  if(isNaN(d.getTime()))return false;
+  const[y,m,day]=str.split('-').map(Number);
+  return d.getFullYear()===y&&(d.getMonth()+1)===m&&d.getDate()===day;
+}
+
+// ── AUTH ──────────────────────────────────────────────────
+async function iniciar(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){document.getElementById('loading').style.display='none';await carregarTudo();}
+  else{document.getElementById('loading').style.display='none';document.getElementById('login-screen').style.display='flex';}
+}
+async function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const btn=document.getElementById('login-btn');const erro=document.getElementById('login-erro');
+  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
+  const{error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;}
+  else{document.getElementById('login-screen').style.display='none';await carregarTudo();}
+}
+async function fazerLogout(){if(!confirm('Deseja sair?'))return;await sb.auth.signOut();location.reload();}
+document.getElementById('login-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-senha').focus();});
+
+// ── LOAD ──────────────────────────────────────────────────
 async function carregarTudo(){
-  const [f,s,c] = await Promise.all([
+  const[o,f,s,c]=await Promise.all([
+    sb.from('obras').select('*').order('criado_em'),
     sb.from('funcionarios').select('*').order('criado_em'),
     sb.from('servicos').select('*').order('criado_em'),
     sb.from('compromissos').select('*').order('criado_em'),
   ]);
-  funcionarios = (f.data||[]).map(r=>({...r, nome:r.nome, funcao:r.funcao}));
-  servicos     = (s.data||[]).map(r=>({...r, funcs:r.funcs||[]}));
-  compromissos = (c.data||[]).map(r=>({...r, desc:r.descricao}));
-  document.getElementById('loading').style.display='none';
-  renderServicos();
+  obras=(o.data||[]);
+  funcionarios=(f.data||[]);
+  servicos=(s.data||[]).map(r=>({...r,funcs:r.funcs||[]}));
+  compromissos=(c.data||[]).map(r=>({...r,desc:r.descricao}));
+  renderQuadro();
 }
 
-// ── METRICS ───────────────────────────────────────────────
-function renderMetrics(alertId, metricsId){
+// ── QUADRO DE OBRAS ───────────────────────────────────────
+const STATUS_OBRA=[
+  {key:'aberto',label:'Aberto',color:'#9E9C96'},
+  {key:'encaminhado',label:'Encaminhado',color:'#854F0B'},
+  {key:'aprovado',label:'Aprovado',color:'#185FA5'},
+  {key:'executando',label:'Executando',color:'#E85D26'},
+  {key:'finalizado',label:'Finalizado',color:'#3B6D11'},
+];
+
+function renderQuadro(){
+  // alertas de obras aprovadas/executando sem serviço
+  const semServico=obras.filter(o=>
+    (o.status==='aprovado'||o.status==='executando')&&
+    !servicos.some(s=>s.obra===o.nome&&s.status!=='concluido')
+  );
+  const alertDiv=document.getElementById('alertas-quadro');
+  alertDiv.innerHTML=semServico.map(o=>
+    `<div class="alert-red">⚠ <strong>${o.nome}</strong> — obra ${o.status} sem serviço lançado!</div>`
+  ).join('');
+
+  const kanban=document.getElementById('kanban');
+  kanban.innerHTML=STATUS_OBRA.map(st=>{
+    const obrasCol=obras.filter(o=>o.status===st.key);
+    const cards=obrasCol.map(o=>{
+      const i=obras.indexOf(o);
+      const temServico=servicos.some(s=>s.obra===o.nome&&s.status!=='concluido');
+      const warn=(st.key==='aprovado'||st.key==='executando')&&!temServico;
+      return`<div class="kanban-card" onclick="abrirObra(${i})">
+        <div class="kanban-card-name">${o.nome}</div>
+        ${warn?'<div class="kanban-card-warn">⚠ Sem serviço lançado</div>':''}
+      </div>`;
+    }).join('');
+    return`<div class="kanban-col">
+      <div class="kanban-col-title">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="status-dot" style="background:${st.color}"></div>${st.label}
+        </div>
+        <span style="font-size:12px;color:var(--text3);font-weight:400">${obrasCol.length}</span>
+      </div>
+      ${cards||'<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Nenhuma</div>'}
+    </div>`;
+  }).join('');
+}
+
+function abrirObra(idx){
+  editOIdx=idx!==undefined?idx:null;
+  document.getElementById('mo-titulo').textContent=editOIdx!==null?'Editar obra':'Nova obra';
+  document.getElementById('mo-excluir').style.display=editOIdx!==null?'inline-block':'none';
+  const o=editOIdx!==null?obras[editOIdx]:{};
+  document.getElementById('mo-nome').value=o.nome||'';
+  document.getElementById('mo-status').value=o.status||'aberto';
+  document.getElementById('modal-o').classList.add('open');
+}
+async function salvarObra(){
+  const nome=document.getElementById('mo-nome').value.trim();
+  const status=document.getElementById('mo-status').value;
+  if(!nome){alert('Preencha o nome da obra.');return;}
+  setSyncStatus('loading');
+  try{
+    if(editOIdx!==null){await sb.from('obras').update({nome,status}).eq('id',obras[editOIdx].id);}
+    else{await sb.from('obras').insert({nome,status});}
+    setSyncStatus('ok');fecharModal('modal-o');await carregarTudo();
+  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+}
+async function excluirObra(){
+  if(editOIdx===null)return;
+  if(!confirm('Excluir esta obra?'))return;
+  await sb.from('obras').delete().eq('id',obras[editOIdx].id);
+  setSyncStatus('ok');fecharModal('modal-o');await carregarTudo();
+}
+
+// ── MÉTRICAS ──────────────────────────────────────────────
+function renderMetrics(alertId,metricsId){
   const total=servicos.length;
   const sem=servicos.filter(s=>s.status==='sem-agenda').length;
   const exec=servicos.filter(s=>s.status==='execucao').length;
@@ -328,16 +465,18 @@ function renderServicos(){
   const fs=document.getElementById('filter-status').value;
   const lista=servicos.filter(s=>(s.obra+s.servico+(s.funcs||[]).join(' ')).toLowerCase().includes(q)&&(!fs||s.status===fs));
   const tbody=document.getElementById('tbody-s');
-  if(!lista.length){tbody.innerHTML=`<tr><td colspan="6" class="empty">Nenhum serviço encontrado.</td></tr>`;renderListaCompromissos();return;}
+  if(!lista.length){tbody.innerHTML=`<tr><td colspan="7" class="empty">Nenhum serviço encontrado.</td></tr>`;renderListaCompromissos();return;}
   tbody.innerHTML=lista.map(s=>{
     const i=servicos.indexOf(s);
     const chips=(s.funcs||[]).length?(s.funcs||[]).map(f=>`<span class="chip" style="background:${corFunc(f)}">${f}</span>`).join(''):'<span style="color:var(--text3);font-style:italic">—</span>';
-    return`<tr onclick="abrirServico(${i})" style="cursor:pointer">
-      <td><span class="tag">${s.obra}</span></td>
-      <td title="${s.servico}">${s.servico}</td>
-      <td style="white-space:normal;line-height:1.8">${chips}</td>
-      <td>${fmtDate(s.inicio)}</td><td>${fmtDate(s.fim)}</td>
-      <td><span class="badge ${badgeClass(s.status)}">${statusLabel(s.status)}</span></td>
+    return`<tr>
+      <td onclick="abrirServico(${i})"><span class="tag">${s.obra}</span></td>
+      <td onclick="abrirServico(${i})" title="${s.servico}">${s.servico}</td>
+      <td onclick="abrirServico(${i})" style="white-space:normal;line-height:1.8">${chips}</td>
+      <td onclick="abrirServico(${i})">${fmtDate(s.inicio)}</td>
+      <td onclick="abrirServico(${i})">${fmtDate(s.fim)}</td>
+      <td onclick="abrirServico(${i})"><span class="badge ${badgeClass(s.status)}">${statusLabel(s.status)}</span></td>
+      <td><button class="btn btn-dup" style="font-size:11px;padding:4px 10px" onclick="duplicarServico(${i})">Duplicar</button></td>
     </tr>`;
   }).join('');
   renderListaCompromissos();
@@ -353,12 +492,23 @@ function renderListaCompromissos(){
     </div>`).join('');
 }
 
+function buildObraSelect(val){
+  const sel=document.getElementById('ms-obra-sel');
+  const obrasAtivas=obras.filter(o=>o.status==='aprovado'||o.status==='executando');
+  sel.innerHTML='<option value="">— selecione uma obra —</option>'+
+    obrasAtivas.map(o=>`<option value="${o.nome}"${o.nome===val?' selected':''}>${o.nome}</option>`).join('');
+  // also add the current value if not in list (for editing old records)
+  if(val&&!obrasAtivas.find(o=>o.nome===val)){
+    sel.innerHTML+=`<option value="${val}" selected>${val}</option>`;
+  }
+}
+
 function abrirServico(idx){
   editSIdx=idx!==undefined?idx:null;
   document.getElementById('ms-titulo').textContent=editSIdx!==null?'Editar serviço':'Novo serviço';
   document.getElementById('ms-excluir').style.display=editSIdx!==null?'inline-block':'none';
   const s=editSIdx!==null?servicos[editSIdx]:{};
-  document.getElementById('ms-obra').value=s.obra||'';
+  buildObraSelect(s.obra||'');
   document.getElementById('ms-servico').value=s.servico||'';
   document.getElementById('ms-inicio').value=s.inicio||'';
   document.getElementById('ms-fim').value=s.fim||'';
@@ -371,138 +521,58 @@ function abrirServico(idx){
   setTimeout(setupFuncInput,50);
 }
 
+async function duplicarServico(idx){
+  const s=servicos[idx];
+  const novo={obra:s.obra,servico:s.servico+' (cópia)',funcs:[...(s.funcs||[])],inicio:s.inicio||null,fim:s.fim||null,status:s.status};
+  setSyncStatus('loading');
+  try{await sb.from('servicos').insert(novo);setSyncStatus('ok');await carregarTudo();renderServicos();}
+  catch(e){setSyncStatus('err');alert('Erro ao duplicar.');}
+}
+
 async function salvarServico(){
-  const dados={obra:document.getElementById('ms-obra').value.trim(),servico:document.getElementById('ms-servico').value.trim(),funcs:selFuncs,inicio:document.getElementById('ms-inicio').value||null,fim:document.getElementById('ms-fim').value||null,status:document.getElementById('ms-status').value};
-  if(!dados.obra||!dados.servico){alert('Preencha obra e serviço.');return;}
+  const obra=document.getElementById('ms-obra-sel').value;
+  const servico=document.getElementById('ms-servico').value.trim();
+  const inicio=document.getElementById('ms-inicio').value;
+  const fim=document.getElementById('ms-fim').value;
+
+  // Validate dates
+  if(inicio&&!dateValida(inicio)){alert('Data de início inválida. Verifique o dia/mês informado.');return;}
+  if(fim&&!dateValida(fim)){alert('Data de fim inválida. Verifique o dia/mês informado.');return;}
+  if(inicio&&fim&&inicio>fim){alert('A data de início não pode ser maior que a data de fim.');return;}
+
+  const dados={obra,servico,funcs:selFuncs,inicio:inicio||null,fim:fim||null,status:document.getElementById('ms-status').value};
+  if(!obra){alert('Selecione uma obra.');return;}
+  if(!servico){alert('Preencha o nome do serviço.');return;}
   if(!dados.funcs.length)dados.status='sem-agenda';
   setSyncStatus('loading');
   try{
-    if(editSIdx!==null){
-      await sb.from('servicos').update(dados).eq('id',servicos[editSIdx].id);
-    } else {
-      await sb.from('servicos').insert(dados);
-    }
-    setSyncStatus('ok');
-    fecharModal('modal-s');
-    await // ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
-});
-
-iniciar();
+    if(editSIdx!==null){await sb.from('servicos').update(dados).eq('id',servicos[editSIdx].id);}
+    else{await sb.from('servicos').insert(dados);}
+    setSyncStatus('ok');fecharModal('modal-s');await carregarTudo();renderServicos();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 
 async function excluirServico(){
   if(editSIdx===null)return;
   if(!confirm('Excluir este serviço?'))return;
-  setSyncStatus('loading');
   await sb.from('servicos').delete().eq('id',servicos[editSIdx].id);
-  setSyncStatus('ok');
-  fecharModal('modal-s');
-  await // ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
-});
-
-iniciar();
+  setSyncStatus('ok');fecharModal('modal-s');await carregarTudo();renderServicos();
 }
 
 // ── AUTOCOMPLETE ──────────────────────────────────────────
-function renderChips(){
-  document.getElementById('ms-chips').innerHTML=selFuncs.map(f=>`<span class="mchip" style="background:${corFunc(f)}">${f}<span class="mchip-x" onclick="removerChip('${f.replace(/'/g,"\\'")}')">×</span></span>`).join('');
-}
+function renderChips(){document.getElementById('ms-chips').innerHTML=selFuncs.map(f=>`<span class="mchip" style="background:${corFunc(f)}">${f}<span class="mchip-x" onclick="removerChip('${f.replace(/'/g,"\\'")}')">×</span></span>`).join('');}
 function removerChip(nome){selFuncs=selFuncs.filter(f=>f!==nome);renderChips();}
 function adicionarFunc(nome){if(nome&&!selFuncs.includes(nome))selFuncs.push(nome);renderChips();document.getElementById('ms-finput').value='';document.getElementById('ms-suggest').style.display='none';}
 function setupFuncInput(){
-  const inp=document.getElementById('ms-finput');
-  const sug=document.getElementById('ms-suggest');
-  if(!inp||!sug)return;
-  inp.oninput=function(){
-    const val=inp.value.trim().toLowerCase();
-    if(!val){sug.style.display='none';return;}
+  const inp=document.getElementById('ms-finput');const sug=document.getElementById('ms-suggest');if(!inp||!sug)return;
+  inp.oninput=function(){const val=inp.value.trim().toLowerCase();if(!val){sug.style.display='none';return;}
     const matches=funcionarios.filter(f=>f.nome.toLowerCase().includes(val)&&!selFuncs.includes(f.nome));
     if(!matches.length){sug.style.display='none';return;}
     sug.innerHTML=matches.map(f=>`<div class="suggest-item" onmousedown="adicionarFunc('${f.nome.replace(/'/g,"\\'")}')"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:${corFunc(f.nome)}">${iniciais(f.nome)}</div><div><div style="font-weight:500">${f.nome}</div><div style="font-size:11px;color:var(--text2)">${f.funcao}</div></div></div>`).join('');
-    sug.style.display='block';
-  };
-  inp.onkeydown=function(e){
-    if(e.key==='Enter'){e.preventDefault();const first=sug.querySelector('.suggest-item');if(first&&sug.style.display!=='none'){first.dispatchEvent(new Event('mousedown'));return;}const val=inp.value.trim();if(val)adicionarFunc(val);}
+    sug.style.display='block';};
+  inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();const first=sug.querySelector('.suggest-item');if(first&&sug.style.display!=='none'){first.dispatchEvent(new Event('mousedown'));return;}const val=inp.value.trim();if(val)adicionarFunc(val);}
     else if(e.key==='Backspace'&&inp.value===''&&selFuncs.length){selFuncs.pop();renderChips();}
-    else if(e.key==='Escape')sug.style.display='none';
-  };
+    else if(e.key==='Escape')sug.style.display='none';};
   inp.onblur=function(){setTimeout(()=>{sug.style.display='none';},150);};
 }
 
@@ -520,105 +590,24 @@ function abrirCompromisso(idx){
   document.getElementById('mc-fim').value=c.fim||'';
   document.getElementById('modal-c').classList.add('open');
 }
-
 async function salvarCompromisso(){
-  const dados={func:document.getElementById('mc-func').value,descricao:document.getElementById('mc-desc').value.trim(),inicio:document.getElementById('mc-inicio').value,fim:document.getElementById('mc-fim').value};
+  const inicio=document.getElementById('mc-inicio').value;
+  const fim=document.getElementById('mc-fim').value;
+  if(inicio&&!dateValida(inicio)){alert('Data de início inválida.');return;}
+  if(fim&&!dateValida(fim)){alert('Data de fim inválida.');return;}
+  const dados={func:document.getElementById('mc-func').value,descricao:document.getElementById('mc-desc').value.trim(),inicio:inicio||null,fim:fim||null};
   if(!dados.func||!dados.descricao||!dados.inicio||!dados.fim){alert('Preencha todos os campos.');return;}
   setSyncStatus('loading');
   try{
     if(editCIdx!==null){await sb.from('compromissos').update(dados).eq('id',compromissos[editCIdx].id);}
     else{await sb.from('compromissos').insert(dados);}
-    setSyncStatus('ok');fecharModal('modal-c');await // ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
-});
-
-iniciar();
+    setSyncStatus('ok');fecharModal('modal-c');await carregarTudo();renderServicos();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
-
 async function excluirCompromisso(){
-  if(editCIdx===null)return;
-  if(!confirm('Excluir este compromisso?'))return;
+  if(editCIdx===null)return;if(!confirm('Excluir?'))return;
   await sb.from('compromissos').delete().eq('id',compromissos[editCIdx].id);
-  setSyncStatus('ok');fecharModal('modal-c');await // ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
-});
-
-iniciar();
+  setSyncStatus('ok');fecharModal('modal-c');await carregarTudo();renderServicos();
 }
 
 // ── FUNCIONÁRIOS ──────────────────────────────────────────
@@ -638,7 +627,6 @@ function renderFuncionarios(){
     </div>`;
   }).join('');
 }
-
 function abrirFunc(idx){
   editFIdx=idx!==undefined?idx:null;
   document.getElementById('mf-titulo').textContent=editFIdx!==null?'Editar funcionário':'Novo funcionário';
@@ -648,7 +636,6 @@ function abrirFunc(idx){
   document.getElementById('mf-funcao').value=f.funcao||'';
   document.getElementById('modal-f').classList.add('open');
 }
-
 async function salvarFunc(){
   const nome=document.getElementById('mf-nome').value.trim();
   const funcao=document.getElementById('mf-funcao').value.trim();
@@ -658,110 +645,19 @@ async function salvarFunc(){
     if(editFIdx!==null){
       const antigo=funcionarios[editFIdx].nome;
       await sb.from('funcionarios').update({nome,funcao}).eq('id',funcionarios[editFIdx].id);
-      // update nome in servicos
-      for(const s of servicos.filter(s=>(s.funcs||[]).includes(antigo))){
-        const novasFuncs=s.funcs.map(f=>f===antigo?nome:f);
-        await sb.from('servicos').update({funcs:novasFuncs}).eq('id',s.id);
-      }
-      // update nome in compromissos
-      for(const c of compromissos.filter(c=>c.func===antigo)){
-        await sb.from('compromissos').update({func:nome}).eq('id',c.id);
-      }
-    } else {
-      await sb.from('funcionarios').insert({nome,funcao});
-    }
-    setSyncStatus('ok');fecharModal('modal-f');await // ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
-});
-
-iniciar();renderFuncionarios();
+      for(const s of servicos.filter(s=>(s.funcs||[]).includes(antigo))){await sb.from('servicos').update({funcs:s.funcs.map(f=>f===antigo?nome:f)}).eq('id',s.id);}
+      for(const c of compromissos.filter(c=>c.func===antigo)){await sb.from('compromissos').update({func:nome}).eq('id',c.id);}
+    }else{await sb.from('funcionarios').insert({nome,funcao});}
+    setSyncStatus('ok');fecharModal('modal-f');await carregarTudo();renderFuncionarios();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
-
 async function excluirFunc(){
   if(editFIdx===null)return;
   const nome=funcionarios[editFIdx].nome;
-  if(servicos.some(s=>(s.funcs||[]).includes(nome)&&s.status!=='concluido')&&!confirm(`${nome} tem serviços ativos. Excluir mesmo assim?`))return;
+  if(servicos.some(s=>(s.funcs||[]).includes(nome)&&s.status!=='concluido')&&!confirm(`${nome} tem serviços ativos. Excluir?`))return;
+  servicos=servicos.map(s=>{const funcs=(s.funcs||[]).filter(f=>f!==nome);return{...s,funcs,status:funcs.length?s.status:'sem-agenda'};});
   await sb.from('funcionarios').delete().eq('id',funcionarios[editFIdx].id);
-  setSyncStatus('ok');fecharModal('modal-f');await // ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
-});
-
-iniciar();renderFuncionarios();
+  setSyncStatus('ok');fecharModal('modal-f');await carregarTudo();renderFuncionarios();
 }
 
 // ── AGENDA / GANTT ────────────────────────────────────────
@@ -769,57 +665,97 @@ function renderAgenda(){
   renderMetrics('alert-a','metrics-a');
   const gantt=document.getElementById('gantt');
   if(!funcionarios.length){gantt.innerHTML=`<p class="empty">Nenhum funcionário cadastrado.</p>`;return;}
+
   const today=new Date();today.setHours(0,0,0,0);
+
+  // Find earliest start and latest end across all items
+  let firstDate=new Date(today);firstDate.setDate(1);
   let lastDate=new Date(today);lastDate.setMonth(lastDate.getMonth()+1);
-  servicos.forEach(s=>{if(s.fim&&s.status!=='concluido'){const d=new Date(s.fim);if(d>lastDate)lastDate=d;}});
-  compromissos.forEach(c=>{if(c.fim){const d=new Date(c.fim);if(d>lastDate)lastDate=d;}});
+
+  servicos.forEach(s=>{
+    if(s.inicio&&dateValida(s.inicio)){const d=new Date(s.inicio+'T12:00:00');if(d<firstDate)firstDate=new Date(d.getFullYear(),d.getMonth(),1);}
+    if(s.fim&&s.status!=='concluido'&&dateValida(s.fim)){const d=new Date(s.fim+'T12:00:00');if(d>lastDate)lastDate=d;}
+  });
+  compromissos.forEach(c=>{
+    if(c.inicio&&dateValida(c.inicio)){const d=new Date(c.inicio+'T12:00:00');if(d<firstDate)firstDate=new Date(d.getFullYear(),d.getMonth(),1);}
+    if(c.fim&&dateValida(c.fim)){const d=new Date(c.fim+'T12:00:00');if(d>lastDate)lastDate=d;}
+  });
   lastDate.setDate(lastDate.getDate()+5);
-  const days=[];const cur=new Date(today);cur.setDate(1);
+
+  const days=[];const cur=new Date(firstDate);
   while(cur<=lastDate){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+
   const mg=[];let cm=-1,cy=-1,cnt=0;
   days.forEach(d=>{
     if(d.getMonth()!==cm||d.getFullYear()!==cy){if(mg.length)mg[mg.length-1].count=cnt;mg.push({label:d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.',''),count:0});cm=d.getMonth();cy=d.getFullYear();cnt=0;}cnt++;
   });
   if(mg.length)mg[mg.length-1].count=cnt;
+
   const monthsHtml=mg.map(m=>`<div class="gantt-month-cell" style="width:${m.count*DW}px">${m.label}</div>`).join('');
   const daysHtml=days.map(d=>{const isT=d.getTime()===today.getTime();const isW=d.getDay()===0||d.getDay()===6;return`<div class="gantt-day-cell ${isT?'today':isW?'weekend':''}" style="width:${DW}px">${d.getDate()}</div>`;}).join('');
 
   const funcData=funcionarios.map((f,fi)=>{
     const cor=CORES[fi%CORES.length];
-    const servAtivos=servicos.filter(s=>(s.funcs||[]).map(n=>n.trim().toLowerCase()).includes(f.nome.trim().toLowerCase())&&s.inicio&&s.fim&&(s.status==='agendado'||s.status==='execucao'||s.status==='ausente'));
-    const compAtivos=compromissos.filter(c=>c.func===f.nome&&c.inicio&&c.fim);
-    const diasOcupados=servAtivos.filter(s=>s.status!=='ausente').reduce((acc,s)=>{const sS=new Date(Math.max(new Date(s.inicio).getTime(),today.getTime()));const sE=new Date(s.fim);return acc+Math.max(0,Math.ceil((sE-sS)/86400000)+1);},0);
-    const todosItens=[...servAtivos.map(s=>({inicio:s.inicio,fim:s.fim})),...compAtivos.map(c=>({inicio:c.inicio,fim:c.fim}))].filter(i=>new Date(i.fim)>=today).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));
+    const servAtivos=servicos.filter(s=>
+      (s.funcs||[]).map(n=>n.trim().toLowerCase()).includes(f.nome.trim().toLowerCase())&&
+      s.inicio&&s.fim&&dateValida(s.inicio)&&dateValida(s.fim)&&
+      (s.status==='agendado'||s.status==='execucao'||s.status==='ausente')
+    );
+    const compAtivos=compromissos.filter(c=>c.func===f.nome&&c.inicio&&c.fim&&dateValida(c.inicio)&&dateValida(c.fim));
+
+    const diasOcupados=servAtivos.filter(s=>s.status!=='ausente').reduce((acc,s)=>{
+      const sS=new Date(Math.max(new Date(s.inicio+'T12:00:00').getTime(),today.getTime()));
+      const sE=new Date(s.fim+'T12:00:00');
+      return acc+Math.max(0,Math.ceil((sE-sS)/86400000)+1);
+    },0);
+
+    const todosItens=[...servAtivos.map(s=>({inicio:s.inicio,fim:s.fim})),...compAtivos.map(c=>({inicio:c.inicio,fim:c.fim}))].filter(i=>new Date(i.fim+'T12:00:00')>=today).sort((a,b)=>new Date(a.inicio+'T12:00:00')-new Date(b.inicio+'T12:00:00'));
     const mrg=[];
-    todosItens.forEach(r=>{const rS=new Date(r.inicio),rE=new Date(r.fim);if(!mrg.length||rS>new Date(mrg[mrg.length-1].e.getTime()+86400000)){mrg.push({s:new Date(rS),e:new Date(rE)});}else{if(rE>mrg[mrg.length-1].e)mrg[mrg.length-1].e=new Date(rE);}});
+    todosItens.forEach(r=>{const rS=new Date(r.inicio+'T12:00:00'),rE=new Date(r.fim+'T12:00:00');if(!mrg.length||rS>new Date(mrg[mrg.length-1].e.getTime()+86400000)){mrg.push({s:new Date(rS),e:new Date(rE)});}else{if(rE>mrg[mrg.length-1].e)mrg[mrg.length-1].e=new Date(rE);}});
     let sortKey=0;
     if(!mrg.length){sortKey=99999;}else{const prox=mrg[0];if(today>=prox.s&&today<=prox.e){sortKey=-(Math.ceil((prox.e-today)/86400000));}else{sortKey=Math.ceil((prox.s-today)/86400000);}}
-    // proxLivre
     let proxLivre=new Date(today);
     for(const r of mrg){if(proxLivre>=r.s&&proxLivre<=r.e){proxLivre=new Date(r.e.getTime()+86400000);}else if(proxLivre<r.s)break;}
     const diasAteLivre=Math.max(0,Math.ceil((proxLivre-today)/86400000));
     const availColor=diasOcupados>20?'var(--green)':'var(--red)';
     const availText=diasAteLivre===0?'Disponível agora':`Livre em ~${diasAteLivre}d (${diasOcupados}d agendados)`;
-    return{f,fi,cor,servAtivos,compAtivos,diasOcupados,sortKey,availColor,availText};
+    return{f,fi,cor,servAtivos,compAtivos,sortKey,availColor,availText};
   }).sort((a,b)=>b.sortKey-a.sortKey);
 
+  // helper: find day index (clamp to 0 if before range, or last if after)
+  function dayIdx(dateStr){
+    const d=new Date(dateStr+'T12:00:00');
+    d.setHours(0,0,0,0);
+    const idx=days.findIndex(x=>x.getTime()===d.getTime());
+    if(idx>=0)return idx;
+    // if before range, return 0; if after, return last
+    return d<days[0]?0:days.length-1;
+  }
+
   const funcRows=funcData.map(({f,fi,cor,servAtivos,compAtivos,availColor,availText})=>{
-    const allItems=[...servAtivos.map(s=>({...s,_tipo:'servico'})),...compAtivos.map(c=>({obra:'',servico:c.desc,inicio:c.inicio,fim:c.fim,status:'compromisso',_tipo:'comp'}))];
+    const allItems=[
+      ...servAtivos.map(s=>({...s,_tipo:'servico'})),
+      ...compAtivos.map(c=>({obra:'',servico:c.desc,inicio:c.inicio,fim:c.fim,status:'compromisso',_tipo:'comp'}))
+    ];
     const lanes=[];
     allItems.forEach(item=>{
-      const iS=new Date(item.inicio);iS.setHours(0,0,0,0);const iE=new Date(item.fim);iE.setHours(0,0,0,0);
+      const iS=new Date(item.inicio+'T12:00:00');iS.setHours(0,0,0,0);
+      const iE=new Date(item.fim+'T12:00:00');iE.setHours(0,0,0,0);
       let lane=0;
-      while(true){if(!lanes[lane]){lanes[lane]=[];break;}const ov=lanes[lane].some(x=>{const xS=new Date(x.inicio);xS.setHours(0,0,0,0);const xE=new Date(x.fim);xE.setHours(0,0,0,0);return iS<=xE&&iE>=xS;});if(!ov)break;lane++;}
+      while(true){if(!lanes[lane]){lanes[lane]=[];break;}
+        const ov=lanes[lane].some(x=>{const xS=new Date(x.inicio+'T12:00:00');xS.setHours(0,0,0,0);const xE=new Date(x.fim+'T12:00:00');xE.setHours(0,0,0,0);return iS<=xE&&iE>=xS;});
+        if(!ov)break;lane++;}
       if(!lanes[lane])lanes[lane]=[];lanes[lane].push(item);
     });
     const numLanes=Math.max(1,lanes.length);
     const bgCells=days.map(d=>{const isT=d.getTime()===today.getTime();const isW=d.getDay()===0||d.getDay()===6;return`<div class="g-cell ${isT?'today-col':isW?'weekend-col':''}" style="width:${DW}px"></div>`;}).join('');
+
     const lanesHtml=Array.from({length:numLanes},(_,li)=>{
       const bars=(lanes[li]||[]).map(item=>{
-        const iS=new Date(item.inicio);iS.setHours(0,0,0,0);const iE=new Date(item.fim);iE.setHours(0,0,0,0);
-        const si=days.findIndex(d=>d.getTime()===iS.getTime());const ei=days.findIndex(d=>d.getTime()===iE.getTime());
-        if(si<0)return'';
-        const left=si*DW;const width=Math.max(DW,((ei>=0?ei:si)+1-si)*DW);
+        const si=dayIdx(item.inicio);
+        const ei=dayIdx(item.fim);
+        const left=si*DW;
+        const width=Math.max(DW,(ei-si+1)*DW);
         const isComp=item._tipo==='comp';const isAusente=item.status==='ausente';
         let bg=cor;if(isComp)bg='#888888';if(isAusente)bg='repeating-linear-gradient(45deg,#888,#888 4px,#bbb 4px,#bbb 8px)';
         const label=isComp?'● '+item.servico:isAusente?'⊘ '+item.servico:(item.obra?item.obra+' — '+item.servico:item.servico);
@@ -827,6 +763,7 @@ function renderAgenda(){
       }).join('');
       return`<div class="gantt-lane" style="position:relative;height:22px"><div style="display:flex;position:absolute;inset:0;pointer-events:none">${bgCells}</div>${bars}</div>`;
     }).join('');
+
     return`<div class="gantt-func-row">
       <div class="g-label">
         <div style="display:flex;align-items:center;gap:8px">
@@ -840,61 +777,27 @@ function renderAgenda(){
   }).join('');
 
   gantt.innerHTML=`<div class="gantt-head"><div class="gantt-month-row"><div class="g-label-head">Funcionário</div><div class="gantt-months-wrap">${monthsHtml}</div></div><div class="gantt-day-row"><div class="g-label-head" style="border-bottom:none"></div><div class="gantt-days-wrap">${daysHtml}</div></div></div>${funcRows}`;
+  // scroll to 1 week before today
   const todayIdx=days.findIndex(d=>d.getTime()===today.getTime());
   setTimeout(()=>{document.getElementById('gantt-scroll').scrollLeft=Math.max(0,(todayIdx-7)*DW);},50);
 }
 
 // ── TABS ──────────────────────────────────────────────────
 function switchTab(tab){
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['servicos','agenda','funcionarios'][i]===tab));
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['quadro','servicos','agenda','funcionarios'][i]===tab));
   document.getElementById('content-wrap').style.display='none';
   document.getElementById('view-agenda').style.display='none';
-  if(tab==='servicos'){document.getElementById('content-wrap').style.display='flex';document.getElementById('view-servicos').style.display='block';document.getElementById('view-funcionarios').style.display='none';renderServicos();}
-  else if(tab==='funcionarios'){document.getElementById('content-wrap').style.display='flex';document.getElementById('view-servicos').style.display='none';document.getElementById('view-funcionarios').style.display='block';renderFuncionarios();}
-  else if(tab==='agenda'){document.getElementById('view-agenda').style.display='flex';renderAgenda();}
+  if(tab==='agenda'){document.getElementById('view-agenda').style.display='flex';renderAgenda();return;}
+  document.getElementById('content-wrap').style.display='flex';
+  ['quadro','servicos','funcionarios'].forEach(v=>document.getElementById('view-'+v).style.display='none');
+  document.getElementById('view-'+tab).style.display='block';
+  if(tab==='quadro')renderQuadro();
+  if(tab==='servicos')renderServicos();
+  if(tab==='funcionarios')renderFuncionarios();
 }
 
-['modal-s','modal-c','modal-f'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fecharModal(id);});});
-
-// ── AUTH ─────────────────────────────────────────────────
-async function iniciar(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    document.getElementById('loading').style.display='none';
-    await carregarTudo();
-  } else {
-    document.getElementById('loading').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-  }
-}
-
-async function fazerLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const senha=document.getElementById('login-senha').value;
-  const btn=document.getElementById('login-btn');
-  const erro=document.getElementById('login-erro');
-  btn.textContent='Entrando...';btn.disabled=true;erro.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:senha});
-  if(error){
-    erro.style.display='block';btn.textContent='Entrar';btn.disabled=false;
-  } else {
-    document.getElementById('login-screen').style.display='none';
-    await carregarTudo();
-  }
-}
-
-async function fazerLogout(){
-  if(!confirm('Deseja sair do sistema?'))return;
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// Enter key on login
-document.getElementById('login-senha').addEventListener('keydown',function(e){
-  if(e.key==='Enter')fazerLogin();
-});
-document.getElementById('login-email').addEventListener('keydown',function(e){
-  if(e.key==='Enter')document.getElementById('login-senha').focus();
+['modal-o','modal-s','modal-c','modal-f'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fecharModal(id);});
 });
 
 iniciar();
