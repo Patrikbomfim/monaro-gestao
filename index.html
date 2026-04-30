@@ -9,60 +9,66 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
 :root{--bg:#F5F4F0;--surface:#FFFFFF;--surface2:#EEECE7;--border:#DDDAD2;--border2:#CCC9BF;--text:#1A1916;--text2:#6B6860;--text3:#9E9C96;--orange:#E85D26;--orange-dark:#B84318;--orange-light:#FBE9E1;--blue:#185FA5;--blue-light:#E6F1FB;--green:#3B6D11;--green-light:#EAF3DE;--amber:#854F0B;--amber-light:#FAEEDA;--red:#A32D2D;--red-light:#FCEBEB;--radius:8px;--radius-lg:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;display:flex;flex-direction:column;}
-.header{background:var(--text);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;z-index:50;}
-.logo{color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
-.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);}
-.header-right{display:flex;align-items:center;gap:8px;}
-.nav{display:flex;gap:2px;}
-.nav-btn{padding:6px 14px;border-radius:var(--radius);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:#aaa;}
-.nav-btn:hover{color:#fff;}
+html,body{height:100%;overflow:hidden;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+/* SIDEBAR LAYOUT */
+.app-layout{display:flex;height:100%;overflow:hidden;}
+.sidebar{width:220px;min-width:220px;background:var(--text);display:flex;flex-direction:column;z-index:50;flex-shrink:0;transition:width 0.2s ease;}
+.sidebar.collapsed{width:52px;min-width:52px;}
+.sidebar.collapsed .logo,.sidebar.collapsed .nav-btn span:not(.nav-icon){display:none;}.sidebar.collapsed .sidebar-footer .sidebar-sync{display:none;}.sidebar.collapsed .sidebar-footer button{display:none;}
+.sidebar.collapsed .nav-btn{justify-content:center;padding:9px 0;}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:1rem 0;}.sidebar.collapsed .sidebar-toggle{display:block!important;}
+.sidebar-toggle{background:transparent;border:none;color:#888;cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;display:block!important;}
+.sidebar-toggle:hover{color:#fff;}
+.sidebar-logo{padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid rgba(255,255,255,0.08);}
+.logo{color:#fff;font-size:15px;font-weight:600;letter-spacing:-0.02em;}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;}
+.sidebar-nav{flex:1;padding:0.75rem 0.5rem;display:flex;flex-direction:column;gap:2px;}
+.nav-btn{width:100%;text-align:left;padding:9px 14px;border-radius:var(--radius);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:#888;display:flex;align-items:center;gap:10px;transition:all 0.15s;}
+.nav-btn:hover{background:rgba(255,255,255,0.07);color:#ccc;}
 .nav-btn.active{background:rgba(255,255,255,0.12);color:#fff;}
+.nav-btn .nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:1rem;border-top:0.5px solid rgba(255,255,255,0.08);}
+.sidebar-sync{font-size:11px;color:#666;display:flex;align-items:center;gap:5px;margin-bottom:8px;}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#aaa;}
+.sync-dot.ok{background:#4CAF50;}.sync-dot.err{background:#F44336;}.sync-dot.loading{background:#FFC107;animation:pulse 1s infinite;}
+.app-content{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
 .sync-status{font-size:11px;color:#aaa;display:flex;align-items:center;gap:5px;}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:#aaa;}
 .sync-dot.ok{background:#4CAF50;}.sync-dot.err{background:#F44336;}.sync-dot.loading{background:#FFC107;animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 @keyframes spin{to{transform:rotate(360deg);}}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;min-height:0;}
 .main{padding:1.5rem 2rem;max-width:1600px;width:100%;margin:0 auto;flex-shrink:0;}
-#view-agenda{display:none;flex:1;flex-direction:column;overflow:hidden;}
-#view-agenda.active{display:flex;}
+#view-agenda{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
 .agenda-top{padding:1.5rem 2rem 0.75rem;flex-shrink:0;max-width:1600px;width:100%;margin:0 auto;}
 .gantt-outer{flex:1;overflow:hidden;padding:0 2rem 1rem;max-width:1600px;width:100%;margin:0 auto;}
 .gantt-scroll{width:100%;height:100%;overflow:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);}
 .gantt-head{position:sticky;top:0;z-index:10;background:var(--bg);}
 .gantt-month-row{display:flex;border-bottom:0.5px solid var(--border);}
-.g-label-head{width:200px;min-width:200px;flex-shrink:0;border-right:1px solid var(--border);padding:5px 10px;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;position:sticky;left:0;background:var(--bg);z-index:6;}
-.gantt-months-wrap{display:flex;}
-.gantt-month-cell{text-align:center;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;padding:4px 0;border-right:0.5px solid var(--border);flex-shrink:0;}
-.gantt-day-row{display:flex;border-bottom:1px solid var(--border2);}
-.gantt-days-wrap{display:flex;}
+.g-label-head{width:200px;min-width:200px;flex-shrink:0;border-right:1px solid var(--border);padding:5px 10px;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;position:sticky;left:0;background:var(--bg);z-index:6;box-shadow:2px 0 4px rgba(0,0,0,0.06);}
+.gantt-months-wrap{display:flex;}.gantt-month-cell{text-align:center;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;padding:4px 0;border-right:0.5px solid var(--border);flex-shrink:0;}
+.gantt-day-row{display:flex;border-bottom:1px solid var(--border2);}.gantt-days-wrap{display:flex;}
 .gantt-day-cell{text-align:center;font-size:10px;color:var(--text3);padding:3px 0;border-right:0.5px solid var(--border);flex-shrink:0;}
-.gantt-day-cell.today{background:var(--orange-light);color:var(--orange);font-weight:700;}
-.gantt-day-cell.weekend{background:var(--surface2);}
-.gantt-func-row{display:flex;border-bottom:0.5px solid var(--border);}
-.g-label{width:200px;min-width:200px;flex-shrink:0;padding:8px 10px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;background:var(--surface);position:sticky;left:0;z-index:5;}
+.gantt-day-cell.today{background:var(--orange-light);color:var(--orange);font-weight:700;}.gantt-day-cell.weekend{background:var(--surface2);}
+.gantt-func-row{display:flex;border-bottom:0.5px solid var(--border);min-height:28px;}
+.g-label{width:200px;min-width:200px;flex-shrink:0;padding:4px 8px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;background:var(--surface);position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.06);}
 .gantt-track{flex:1;display:flex;flex-direction:column;background:var(--surface);}
 .gantt-lane{display:flex;height:22px;position:relative;flex-shrink:0;}
 .g-cell{flex-shrink:0;border-right:0.5px solid var(--border);height:22px;}
-.g-cell.today-col{background:rgba(232,93,38,0.05);}
-.g-cell.weekend-col{background:var(--surface2);}
+.g-cell.today-col{background:rgba(232,93,38,0.05);}.g-cell.weekend-col{background:var(--surface2);}
 .gantt-bar{position:absolute;height:16px;top:3px;border-radius:3px;font-size:9px;color:#fff;display:flex;align-items:center;padding:0 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600;z-index:3;}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.25rem;}
 .metric{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;}
-.metric-label{font-size:12px;color:var(--text2);margin-bottom:6px;}
-.metric-value{font-size:26px;font-weight:500;line-height:1;}
+.metric-label{font-size:12px;color:var(--text2);margin-bottom:6px;}.metric-value{font-size:26px;font-weight:500;line-height:1;}
 .alert{background:var(--amber-light);border:0.5px solid #EF9F27;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
 .alert-red{background:var(--red-light);border:0.5px solid #F09595;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
 .toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
 .toolbar input,.toolbar select{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
 .toolbar input{flex:1;min-width:160px;}
 .btn{font-family:'DM Sans',sans-serif;padding:7px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--text);white-space:nowrap;}
-.btn:hover{background:var(--surface2);}
-.btn-primary{background:var(--orange);color:#fff;border-color:var(--orange);}
-.btn-primary:hover{background:var(--orange-dark);}
-.btn-danger{background:var(--red-light);color:var(--red);border-color:#F09595;}
+.btn:hover{background:var(--surface2);}.btn-primary{background:var(--orange);color:#fff;border-color:var(--orange);}
+.btn-primary:hover{background:var(--orange-dark);}.btn-danger{background:var(--red-light);color:var(--red);border-color:#F09595;}
 .btn-dup{background:#E6F1FB;color:var(--blue);border-color:#85B7EB;}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
@@ -71,11 +77,10 @@ td{padding:9px 12px;border-bottom:0.5px solid var(--border);color:var(--text);ve
 tr:hover td{background:var(--surface2);cursor:pointer;}
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border);}
 .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500;}
-.b-sem{background:var(--red-light);color:var(--red);}
-.b-agendado{background:var(--amber-light);color:var(--amber);}
-.b-execucao{background:var(--blue-light);color:var(--blue);}
-.b-concluido{background:var(--green-light);color:var(--green);}
-.b-ausente{background:#F1EFE8;color:#5F5E5A;}
+.b-sem{background:var(--red-light);color:var(--red);}.b-agendado{background:var(--amber-light);color:var(--amber);}
+.b-execucao{background:var(--blue-light);color:var(--blue);}.b-concluido{background:var(--green-light);color:var(--green);}
+.b-ausente{background:#F1EFE8;color:#5F5E5A;}.b-comprar{background:var(--red-light);color:var(--red);}
+.b-comprado{background:var(--green-light);color:var(--green);}
 .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;color:#fff;margin:1px 2px;}
 .func-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
 .func-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;}
@@ -94,25 +99,59 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 .form-row{margin-bottom:12px;}
 .form-row label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.03em;}
 .form-row input,.form-row select{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
-.form-row input.invalid{border-color:var(--red);}
 .form-actions{display:flex;gap:8px;margin-top:1.25rem;justify-content:flex-end;}
 .section-title{font-size:13px;font-weight:600;color:var(--text2);margin:1.25rem 0 0.75rem;text-transform:uppercase;letter-spacing:0.04em;}
 .comp-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius);margin-bottom:6px;font-size:13px;cursor:pointer;}
 .empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px;}
-.loading-screen{position:fixed;inset:0;background:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;}
+.loading-screen{position:fixed;inset:0;background:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;}
 .loading-screen .logo-big{color:#fff;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px;}
 .loading-screen .dot{width:10px;height:10px;border-radius:50%;background:var(--orange);}
 .loading-screen p{color:#aaa;font-size:13px;}
 .spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;}
-/* QUADRO DE OBRAS */
-.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
-.kanban-col{background:var(--surface2);border-radius:var(--radius-lg);padding:12px;}
-.kanban-col-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
-.kanban-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;cursor:pointer;font-size:13px;}
-.kanban-card:hover{border-color:var(--border2);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
-.kanban-card-name{font-weight:500;margin-bottom:4px;}
-.kanban-card-warn{font-size:11px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px;}
+
+/* PRINT / PDF STYLES */
+@media print {
+  .sidebar,.btn,.obra-back,.obra-header button,.toolbar,.obra-tabs,.suggest-box{display:none!important;}
+  .app-layout{display:block!important;}
+  .app-content{display:block!important;}
+  .obra-screen{position:static!important;overflow:visible!important;}
+  .obra-body{padding:0!important;}
+  body{background:#fff!important;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{border:0.5px solid #ccc;padding:6px 8px;font-size:11px;}
+  .pdf-header{display:block!important;}
+  .badge{border:0.5px solid #ccc;padding:2px 6px;border-radius:4px;}
+  .pdf-only{display:block!important;}
+  .no-print{display:none!important;}
+}
+.pdf-header{display:none;}
+.pdf-only{display:none;}
+/* KANBAN */
+.kanban{display:flex;gap:8px;overflow-x:auto;align-items:flex-start;padding-bottom:8px;}
+.kanban-col{min-width:160px;max-width:200px;flex:1;}
+.kanban-col{background:var(--surface2);border-radius:var(--radius-lg);padding:10px;}
+.kanban-col-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.kanban-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:6px;cursor:pointer;font-size:12px;}
+.kanban-card:hover{border-color:var(--orange);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.kanban-card-name{font-weight:500;margin-bottom:3px;font-size:12px;}
+.kanban-card-warn{font-size:10px;color:var(--red);margin-top:2px;}
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+/* TELA DA OBRA */
+.obra-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;flex-direction:column;overflow:hidden;}
+.obra-screen.open{display:flex;}
+.obra-header{background:var(--text);padding:0 1.5rem;display:flex;align-items:center;gap:12px;height:52px;flex-shrink:0;}
+.obra-back{background:transparent;border:0.5px solid rgba(255,255,255,0.2);color:#aaa;font-family:'DM Sans',sans-serif;font-size:13px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;}
+.obra-back:hover{color:#fff;}
+.obra-title{color:#fff;font-size:15px;font-weight:600;}
+.obra-status-badge{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+.obra-body{flex:1;overflow-y:auto;padding:1.5rem 2rem;max-width:1400px;width:100%;margin:0 auto;}
+.obra-tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--border);padding-bottom:0;}
+.obra-tab{padding:8px 16px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.obra-tab:hover{color:var(--text);}
+.obra-tab.active{color:var(--orange);border-bottom-color:var(--orange);}
+.obra-tab-content{display:none;}.obra-tab-content.active{display:block;}
+/* mini gantt */
+.mini-gantt-scroll{overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);margin-top:1rem;}
 </style>
 </head>
 <body>
@@ -140,57 +179,68 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
   </div>
 </div>
 
-<div class="header">
-  <div class="logo"><div class="logo-dot"></div>Monaro Engenharia</div>
-  <div class="header-right">
-    <div class="sync-status"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-text">Sincronizado</span></div>
-    <button onclick="fazerLogout()" style="font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.2);background:transparent;color:#bbb;font-size:12px;cursor:pointer;">Sair</button>
-    <div class="nav">
-      <button class="nav-btn active" onclick="switchTab('quadro')">Quadro</button>
-      <button class="nav-btn" onclick="switchTab('servicos')">Serviços</button>
-      <button class="nav-btn" onclick="switchTab('agenda')">Agenda</button>
-      <button class="nav-btn" onclick="switchTab('funcionarios')">Funcionários</button>
+<div class="app-layout" id="app-layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-dot"></div>
+      <div class="logo">Monaro</div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu">◀</button>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" onclick="switchTab('quadro')"><span class="nav-icon">🏗</span>Obras</button>
+      <button class="nav-btn" onclick="switchTab('servicos')"><span class="nav-icon">⚠</span>Pendências</button>
+      <button class="nav-btn" onclick="switchTab('agenda')"><span class="nav-icon">📅</span>Agenda</button>
+      <button class="nav-btn" onclick="switchTab('funcionarios')"><span class="nav-icon">👷</span>Funcionários</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-sync"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-text">Sincronizado</span></div>
+      <button onclick="fazerLogout()" style="width:100%;font-family:'DM Sans',sans-serif;padding:7px 14px;border-radius:var(--radius);border:0.5px solid rgba(255,255,255,0.15);background:transparent;color:#888;font-size:12px;cursor:pointer;text-align:left;">Sair</button>
     </div>
   </div>
-</div>
+  <div class="app-content">
 
 <div class="content" id="content-wrap">
-  <!-- QUADRO DE OBRAS -->
+  <!-- QUADRO -->
   <div class="main" id="view-quadro">
     <div id="alertas-quadro"></div>
-    <div class="toolbar">
-      <button class="btn btn-primary" onclick="abrirObra()">+ Nova obra</button>
-    </div>
+    <div class="toolbar"><button class="btn btn-primary" onclick="abrirModalObra()">+ Nova obra</button><button class="btn" onclick="exportarObras()" style="background:var(--surface2)">⬇ PDF</button></div>
     <div class="kanban" id="kanban"></div>
   </div>
 
-  <!-- SERVIÇOS -->
+  <!-- SERVIÇOS (visão geral / filtro) -->
   <div class="main" id="view-servicos" style="display:none">
     <div class="metrics" id="metrics-s"></div>
     <div id="alert-s"></div>
     <div class="toolbar">
-      <input type="text" id="search" placeholder="Buscar obra ou serviço..." oninput="renderServicos()" />
+      <div style="position:relative;flex:1;min-width:160px">
+        <input type="text" id="search" placeholder="Buscar obra ou serviço..." autocomplete="off"
+          oninput="onSearchPendencias()"
+          style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;" />
+        <div id="search-pend-suggest" class="suggest-box" style="width:100%"></div>
+      </div>
+      <select id="filter-tipo" onchange="atualizarFiltroStatus()">
+        <option value="">Todos os tipos</option>
+        <option value="proprio">Serviço próprio</option>
+        <option value="terceirizado">Serviço terceirizado</option>
+        <option value="compra">Compras</option>
+        <option value="documento">Documentos</option>
+      </select>
       <select id="filter-status" onchange="renderServicos()">
         <option value="">Todos os status</option>
-        <option value="sem-agenda">Sem agenda</option>
-        <option value="agendado">Agendado</option>
-        <option value="execucao">Em execução</option>
-        <option value="concluido">Concluído</option>
-        <option value="ausente">Ausente</option>
       </select>
-      <button class="btn btn-primary" onclick="abrirServico()">+ Novo serviço</button>
-      <button class="btn" onclick="abrirCompromisso()" style="background:var(--surface2)">+ Compromisso</button>
+      <button class="btn" onclick="limparFiltrosPendencias()" style="white-space:nowrap">Limpar filtros</button>
+      <button class="btn" onclick="exportarPendencias()" style="white-space:nowrap;background:var(--surface2)">⬇ PDF</button>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th style="width:17%">Obra</th>
-          <th style="width:21%">Serviço</th>
-          <th style="width:20%">Funcionários</th>
-          <th style="width:10%">Início</th>
-          <th style="width:10%">Fim</th>
-          <th style="width:12%">Status</th>
-          <th style="width:10%">Ações</th>
+          <th style="width:18%">Obra</th>
+          <th style="width:22%">Serviço / Material</th>
+          <th style="width:10%">Tipo</th>
+          <th style="width:16%">Responsável</th>
+          <th style="width:9%">Início</th>
+          <th style="width:9%">Fim</th>
+          <th style="width:16%">Status</th>
         </tr></thead>
         <tbody id="tbody-s"></tbody>
       </table>
@@ -201,21 +251,75 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 
   <!-- FUNCIONÁRIOS -->
   <div class="main" id="view-funcionarios" style="display:none">
-    <div class="toolbar"><button class="btn btn-primary" onclick="abrirFunc()">+ Novo funcionário</button></div>
+    <div class="toolbar">
+      <input type="text" id="search-func" placeholder="Buscar funcionário..." oninput="renderFuncionarios()" />
+      <select id="filter-func-status" onchange="renderFuncionarios()">
+        <option value="">Todos</option>
+        <option value="ativo">Ativos</option>
+        <option value="inativo">Inativos</option>
+      </select>
+      <button class="btn btn-primary" onclick="abrirFunc()">+ Novo funcionário</button>
+    </div>
     <div class="func-grid" id="func-grid"></div>
   </div>
 </div>
 
 <!-- AGENDA -->
 <div id="view-agenda">
-  <div class="agenda-top">
-    <div class="metrics" id="metrics-a"></div>
-    <div id="alert-a"></div>
+  <div class="agenda-top" style="padding:1rem 2rem 0.5rem">
+    <div style="max-width:1600px;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="position:relative">
+          <input type="text" id="search-agenda" placeholder="Buscar funcionário..." autocomplete="off"
+            style="font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 11px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;width:240px;" />
+          <div class="suggest-box" id="agenda-suggest" style="width:240px;"></div>
+        </div>
+        <button onclick="selecionarFuncAgendaAtual()" class="btn btn-primary" style="font-size:12px;padding:6px 14px">Selecionar</button>
+        <select id="filter-agenda-status" onchange="renderAgenda()" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;">
+        <option value="">Todos os status</option>
+        <option value="agendado">Agendado</option>
+        <option value="execucao">Em execução</option>
+        <option value="sem-agenda">Sem agenda</option>
+      </select>
+      <button onclick="limparFiltroAgenda()" class="btn" style="font-size:12px;padding:6px 12px">Limpar</button>
+      <button onclick="exportarAgenda()" class="btn" style="font-size:12px;padding:6px 12px;background:var(--surface2)">⬇ PDF</button>
+      </div>
+      <div id="agenda-chips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
   </div>
   <div class="gantt-outer">
     <div class="gantt-scroll" id="gantt-scroll">
       <div id="gantt" style="width:max-content;min-width:100%"></div>
     </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<!-- TELA DA OBRA -->
+<div class="obra-screen" id="obra-screen">
+  <div class="obra-header">
+    <button class="obra-back" onclick="fecharObra()">← Voltar</button>
+    <div class="obra-title" id="obra-screen-title">—</div>
+    <div id="obra-screen-badge"></div>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" onclick="abrirModalItem()" style="font-size:13px">+ Adicionar</button>
+    <button class="btn" onclick="abrirModalObra(obraAtualIdx)" style="font-size:13px;margin-left:4px;background:rgba(255,255,255,0.08);color:#ccc;border-color:rgba(255,255,255,0.15)">Editar obra</button>
+  </div>
+  <div class="obra-body">
+    <div class="obra-tabs">
+      <button class="obra-tab active" onclick="switchObraTab('proprios')">Serviços próprios</button>
+      <button class="obra-tab" onclick="switchObraTab('terceirizados')">Terceirizados</button>
+      <button class="obra-tab" onclick="switchObraTab('compras')">Compras</button>
+      <button class="obra-tab" onclick="switchObraTab('documentos')">Documentos</button>
+      <button class="obra-tab" onclick="switchObraTab('cronograma')">Cronograma</button>
+    </div>
+    <div class="obra-tab-content active" id="obra-tab-proprios"></div>
+    <div class="obra-tab-content" id="obra-tab-terceirizados"></div>
+    <div class="obra-tab-content" id="obra-tab-compras"></div>
+    <div class="obra-tab-content" id="obra-tab-documentos"></div>
+    <div class="obra-tab-content" id="obra-tab-cronograma"></div>
   </div>
 </div>
 
@@ -231,6 +335,7 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
         <option value="aprovado">Aprovado</option>
         <option value="executando">Executando</option>
         <option value="finalizado">Finalizado</option>
+        <option value="manutencao">Manutenção</option>
       </select>
     </div>
     <div class="form-actions">
@@ -241,40 +346,57 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
   </div>
 </div>
 
-<!-- Modal Serviço -->
-<div class="overlay" id="modal-s">
+<!-- Modal Item (serviço próprio / terceirizado / compra) -->
+<div class="overlay" id="modal-item">
   <div class="modal">
-    <h3 id="ms-titulo">Novo serviço</h3>
-    <div class="form-row"><label>Obra</label>
-      <select id="ms-obra-sel">
-        <option value="">— selecione uma obra —</option>
+    <h3 id="mi-titulo">Novo item</h3>
+    <div class="form-row"><label>Tipo</label>
+      <select id="mi-tipo" onchange="atualizarCamposItem()">
+        <option value="proprio">Serviço próprio</option>
+        <option value="terceirizado">Serviço terceirizado</option>
+        <option value="compra">Compra / Material</option>
       </select>
     </div>
-    <div class="form-row"><label>Serviço</label><input id="ms-servico" placeholder="Ex: Pintura fachada — Bloco 01" /></div>
-    <div class="form-row">
-      <label>Funcionários — digite e pressione Enter</label>
-      <div class="multi-wrap">
-        <div class="multi-chips" id="ms-chips"></div>
-        <input id="ms-finput" type="text" placeholder="Digite para buscar..." autocomplete="off"
-          style="border:none;outline:none;width:100%;font-family:inherit;font-size:13px;padding:2px 4px;background:transparent;color:var(--text);" />
-        <div class="suggest-box" id="ms-suggest"></div>
+    <div class="form-row"><label id="mi-nome-label">Nome do serviço</label><input id="mi-nome" placeholder="Ex: Pintura fachada — Bloco 01" /></div>
+    <!-- campos serviço -->
+    <div id="mi-campos-servico">
+      <div class="form-row" id="mi-row-funcs">
+        <label>Funcionários — digite e pressione Enter</label>
+        <div class="multi-wrap">
+          <div class="multi-chips" id="mi-chips"></div>
+          <input id="mi-finput" type="text" placeholder="Digite para buscar..." autocomplete="off"
+            style="border:none;outline:none;width:100%;font-family:inherit;font-size:13px;padding:2px 4px;background:transparent;color:var(--text);" />
+          <div class="suggest-box" id="mi-suggest"></div>
+        </div>
+      </div>
+      <div class="form-row" id="mi-row-terceiro" style="display:none">
+        <label>Empresa / Pessoa terceirizada</label>
+        <input id="mi-terceiro" placeholder="Ex: Elétrica Silva, João Gesseiro..." />
+      </div>
+      <div class="form-row"><label>Data início</label><input type="date" id="mi-inicio" /></div>
+      <div class="form-row"><label>Data fim</label><input type="date" id="mi-fim" /></div>
+      <div class="form-row"><label>Status</label>
+        <select id="mi-status">
+          <option value="sem-agenda">Sem agenda</option>
+          <option value="agendado">Agendado</option>
+          <option value="execucao">Em execução</option>
+          <option value="concluido">Concluído</option>
+        </select>
       </div>
     </div>
-    <div class="form-row"><label>Data início</label><input type="date" id="ms-inicio" /></div>
-    <div class="form-row"><label>Data fim</label><input type="date" id="ms-fim" /></div>
-    <div class="form-row"><label>Status</label>
-      <select id="ms-status">
-        <option value="sem-agenda">Sem agenda</option>
-        <option value="agendado">Agendado</option>
-        <option value="execucao">Em execução</option>
-        <option value="concluido">Concluído</option>
-        <option value="ausente">Ausente</option>
-      </select>
+    <!-- campos compra -->
+    <div id="mi-campos-compra" style="display:none">
+      <div class="form-row"><label>Status</label>
+        <select id="mi-status-compra">
+          <option value="a-comprar">A comprar</option>
+          <option value="comprado">Comprado</option>
+        </select>
+      </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-danger" id="ms-excluir" style="display:none;margin-right:auto" onclick="excluirServico()">Excluir</button>
-      <button class="btn" onclick="fecharModal('modal-s')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarServico()">Salvar</button>
+      <button class="btn btn-danger" id="mi-excluir" style="display:none;margin-right:auto" onclick="excluirItem()">Excluir</button>
+      <button class="btn" onclick="fecharModal('modal-item')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarItem()">Salvar</button>
     </div>
   </div>
 </div>
@@ -301,6 +423,13 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <h3 id="mf-titulo">Novo funcionário</h3>
     <div class="form-row"><label>Nome</label><input id="mf-nome" placeholder="Ex: Carlos Silva" /></div>
     <div class="form-row"><label>Função / especialidade</label><input id="mf-funcao" placeholder="Ex: Rapelista, Pintor, Eletricista" /></div>
+    <div class="form-row"><label>Telefone</label><input id="mf-telefone" placeholder="Ex: 44 99999-0000" /></div>
+    <div class="form-row"><label>Chave Pix</label><input id="mf-pix" placeholder="CPF, telefone ou e-mail" /></div>
+    <div class="form-row"><label>Nome favorecido</label><input id="mf-favorecido" placeholder="Nome completo para transferência" /></div>
+    <div class="form-row"><label>Banco favorecido</label><input id="mf-banco" placeholder="Ex: Nubank, Itaú, Bradesco..." /></div>
+    <div class="form-row"><label>Status</label>
+      <select id="mf-ativo"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
+    </div>
     <div class="form-actions">
       <button class="btn btn-danger" id="mf-excluir" style="display:none;margin-right:auto" onclick="excluirFunc()">Excluir</button>
       <button class="btn" onclick="fecharModal('modal-f')">Cancelar</button>
@@ -316,27 +445,30 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const CORES=['#E85D26','#185FA5','#0F6E56','#854F0B','#534AB7','#993556','#3B6D11','#A32D2D','#0C447C','#633806'];
 const DW=28;
 
-let obras=[], funcionarios=[], servicos=[], compromissos=[];
-let editOIdx=null, editSIdx=null, editCIdx=null, editFIdx=null;
+let obras=[], funcionarios=[], servicos=[], compromissos=[], itensObra=[];
+let editOIdx=null, editIIdx=null, editCIdx=null, editFIdx=null;
+let obraAtualIdx=null;
 let selFuncs=[];
+
+const STATUS_OBRA=[
+  {key:'aberto',label:'Aberto',color:'#9E9C96'},
+  {key:'encaminhado',label:'Encaminhado',color:'#854F0B'},
+  {key:'aprovado',label:'Aprovado',color:'#185FA5'},
+  {key:'executando',label:'Executando',color:'#E85D26'},
+  {key:'finalizado',label:'Finalizado',color:'#3B6D11'},
+  {key:'manutencao',label:'Manutenção',color:'#993556'},
+];
 
 // ── HELPERS ───────────────────────────────────────────────
 function corFunc(nome){const i=funcionarios.findIndex(f=>f.nome===nome);return CORES[(i>=0?i:0)%CORES.length];}
 function iniciais(nome){return nome.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y.slice(2)}`;}
-function statusLabel(s){return{'sem-agenda':'Sem agenda','agendado':'Agendado','execucao':'Em execução','concluido':'Concluído','ausente':'Ausente'}[s]||s;}
-function badgeClass(s){return{'sem-agenda':'b-sem','agendado':'b-agendado','execucao':'b-execucao','concluido':'b-concluido','ausente':'b-ausente'}[s]||'';}
+function statusLabel(s){return{'sem-agenda':'Sem agenda','agendado':'Agendado','execucao':'Em execução','concluido':'Concluído','ausente':'Ausente','a-comprar':'A comprar','comprado':'Comprado'}[s]||s;}
+function badgeClass(s){return{'sem-agenda':'b-sem','agendado':'b-agendado','execucao':'b-execucao','concluido':'b-concluido','ausente':'b-ausente','a-comprar':'b-comprar','comprado':'b-comprado'}[s]||'';}
 function fecharModal(id){document.getElementById(id).classList.remove('open');}
-function setSyncStatus(state){const dot=document.getElementById('sync-dot');const txt=document.getElementById('sync-text');dot.className='sync-dot '+state;txt.textContent=state==='ok'?'Sincronizado':state==='loading'?'Salvando...':'Erro ao salvar';}
-
-// Validate date - check if date string is truly valid
-function dateValida(str){
-  if(!str)return true; // empty is ok
-  const d=new Date(str+'T12:00:00');
-  if(isNaN(d.getTime()))return false;
-  const[y,m,day]=str.split('-').map(Number);
-  return d.getFullYear()===y&&(d.getMonth()+1)===m&&d.getDate()===day;
-}
+function setSyncStatus(st){const dot=document.getElementById('sync-dot');const txt=document.getElementById('sync-text');dot.className='sync-dot '+st;txt.textContent=st==='ok'?'Sincronizado':st==='loading'?'Salvando...':'Erro ao salvar';}
+function dateValida(str){if(!str)return true;const d=new Date(str+'T12:00:00');if(isNaN(d.getTime()))return false;const[y,m,day]=str.split('-').map(Number);return d.getFullYear()===y&&(d.getMonth()+1)===m&&d.getDate()===day;}
+function obraStatusInfo(key){return STATUS_OBRA.find(s=>s.key===key)||{label:key,color:'#9E9C96'};}
 
 // ── AUTH ──────────────────────────────────────────────────
 async function iniciar(){
@@ -359,64 +491,55 @@ document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==
 
 // ── LOAD ──────────────────────────────────────────────────
 async function carregarTudo(){
-  const[o,f,s,c]=await Promise.all([
+  const[o,f,s,c,it]=await Promise.all([
     sb.from('obras').select('*').order('criado_em'),
     sb.from('funcionarios').select('*').order('criado_em'),
     sb.from('servicos').select('*').order('criado_em'),
     sb.from('compromissos').select('*').order('criado_em'),
+    sb.from('itens_obra').select('*').order('criado_em'),
   ]);
-  obras=(o.data||[]);
-  funcionarios=(f.data||[]);
+  obras=o.data||[];
+  funcionarios=f.data||[];
   servicos=(s.data||[]).map(r=>({...r,funcs:r.funcs||[]}));
   compromissos=(c.data||[]).map(r=>({...r,desc:r.descricao}));
+  itensObra=it.data||[];
   renderQuadro();
 }
 
-// ── QUADRO DE OBRAS ───────────────────────────────────────
-const STATUS_OBRA=[
-  {key:'aberto',label:'Aberto',color:'#9E9C96'},
-  {key:'encaminhado',label:'Encaminhado',color:'#854F0B'},
-  {key:'aprovado',label:'Aprovado',color:'#185FA5'},
-  {key:'executando',label:'Executando',color:'#E85D26'},
-  {key:'finalizado',label:'Finalizado',color:'#3B6D11'},
-];
-
+// ── QUADRO ────────────────────────────────────────────────
 function renderQuadro(){
-  // alertas de obras aprovadas/executando sem serviço
-  const semServico=obras.filter(o=>
-    (o.status==='aprovado'||o.status==='executando')&&
-    !servicos.some(s=>s.obra===o.nome&&s.status!=='concluido')
-  );
-  const alertDiv=document.getElementById('alertas-quadro');
-  alertDiv.innerHTML=semServico.map(o=>
-    `<div class="alert-red">⚠ <strong>${o.nome}</strong> — obra ${o.status} sem serviço lançado!</div>`
-  ).join('');
-
+  const semItem=obras.filter(o=>(o.status==='aprovado'||o.status==='executando')&&!itensObra.some(it=>it.obra_id===o.id&&it.tipo!=='compra'&&it.status!=='concluido'));
+  document.getElementById('alertas-quadro').innerHTML='';
   const kanban=document.getElementById('kanban');
   kanban.innerHTML=STATUS_OBRA.map(st=>{
-    const obrasCol=obras.filter(o=>o.status===st.key);
-    const cards=obrasCol.map(o=>{
+    const col=obras.filter(o=>o.status===st.key);
+    const cards=col.map(o=>{
       const i=obras.indexOf(o);
-      const temServico=servicos.some(s=>s.obra===o.nome&&s.status!=='concluido');
-      const warn=(st.key==='aprovado'||st.key==='executando')&&!temServico;
+      const temServ=itensObra.some(it=>it.obra_id===o.id&&it.tipo!=='compra'&&it.tipo!=='documento'&&it.status!=='concluido');
+      const warn=(st.key==='aprovado'||st.key==='executando'||st.key==='manutencao')&&!temServ;
+      const nCompras=['aprovado','executando','manutencao','finalizado'].includes(o.status)?itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='compra'&&it.status==='a-comprar').length:0;
+      const nProprio=['aprovado','executando','manutencao','finalizado'].includes(o.status)?itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='proprio'&&it.status==='sem-agenda').length:0;
+      const nTerceiro=['aprovado','executando','manutencao','finalizado'].includes(o.status)?itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='terceirizado'&&it.status==='sem-agenda').length:0;
       return`<div class="kanban-card" onclick="abrirObra(${i})">
         <div class="kanban-card-name">${o.nome}</div>
         ${warn?'<div class="kanban-card-warn">⚠ Sem serviço lançado</div>':''}
+        ${nProprio>0?`<div style="font-size:11px;color:var(--red);margin-top:2px">⚠ ${nProprio} serviço${nProprio>1?'s':''} próprio${nProprio>1?'s':''} pendente${nProprio>1?'s':''}</div>`:''}
+        ${nTerceiro>0?`<div style="font-size:11px;color:var(--blue);margin-top:2px">⚠ ${nTerceiro} terceirizado${nTerceiro>1?'s':''} pendente${nTerceiro>1?'s':''}</div>`:''}
+        ${nCompras>0?`<div style="font-size:11px;color:var(--amber);margin-top:2px">🛒 ${nCompras} compra${nCompras>1?'s':''} pendente${nCompras>1?'s':''}</div>`:''}
+        ${(()=>{if(!['aprovado','executando','manutencao','finalizado'].includes(o.status))return'';const docsFeitos=itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='documento'&&it.status==='comprado').length;const docsPend=DOCS_LIST.length-docsFeitos;return docsPend>0?`<div style="font-size:11px;color:var(--text2);margin-top:2px">📄 ${docsPend} doc${docsPend>1?'s':''} pendente${docsPend>1?'s':''}</div>`:''})()}
       </div>`;
     }).join('');
     return`<div class="kanban-col">
       <div class="kanban-col-title">
-        <div style="display:flex;align-items:center;gap:6px">
-          <div class="status-dot" style="background:${st.color}"></div>${st.label}
-        </div>
-        <span style="font-size:12px;color:var(--text3);font-weight:400">${obrasCol.length}</span>
+        <div style="display:flex;align-items:center;gap:6px"><div class="status-dot" style="background:${st.color}"></div>${st.label}</div>
+        <span style="font-size:12px;color:var(--text3);font-weight:400">${col.length}</span>
       </div>
       ${cards||'<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Nenhuma</div>'}
     </div>`;
   }).join('');
 }
 
-function abrirObra(idx){
+function abrirModalObra(idx){
   editOIdx=idx!==undefined?idx:null;
   document.getElementById('mo-titulo').textContent=editOIdx!==null?'Editar obra':'Nova obra';
   document.getElementById('mo-excluir').style.display=editOIdx!==null?'inline-block':'none';
@@ -434,49 +557,469 @@ async function salvarObra(){
     if(editOIdx!==null){await sb.from('obras').update({nome,status}).eq('id',obras[editOIdx].id);}
     else{await sb.from('obras').insert({nome,status});}
     setSyncStatus('ok');fecharModal('modal-o');await carregarTudo();
+    if(obraAtualIdx!==null){renderObraScreen();}
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 async function excluirObra(){
   if(editOIdx===null)return;
-  if(!confirm('Excluir esta obra?'))return;
-  await sb.from('obras').delete().eq('id',obras[editOIdx].id);
-  setSyncStatus('ok');fecharModal('modal-o');await carregarTudo();
+  if(!confirm('Excluir esta obra e todos seus itens?'))return;
+  const id=obras[editOIdx].id;
+  await sb.from('itens_obra').delete().eq('obra_id',id);
+  await sb.from('obras').delete().eq('id',id);
+  setSyncStatus('ok');fecharModal('modal-o');fecharObra();await carregarTudo();
 }
 
-// ── MÉTRICAS ──────────────────────────────────────────────
-function renderMetrics(alertId,metricsId){
-  const total=servicos.length;
-  const sem=servicos.filter(s=>s.status==='sem-agenda').length;
-  const exec=servicos.filter(s=>s.status==='execucao').length;
-  const conc=servicos.filter(s=>s.status==='concluido').length;
-  document.getElementById(metricsId).innerHTML=`
-    <div class="metric"><div class="metric-label">Total serviços</div><div class="metric-value">${total}</div></div>
-    <div class="metric"><div class="metric-label">Sem agenda</div><div class="metric-value" style="color:var(--red)">${sem}</div></div>
-    <div class="metric"><div class="metric-label">Em execução</div><div class="metric-value" style="color:var(--blue)">${exec}</div></div>
-    <div class="metric"><div class="metric-label">Concluídos</div><div class="metric-value" style="color:var(--green)">${conc}</div></div>`;
-  document.getElementById(alertId).innerHTML=sem>0
-    ?`<div class="alert">⚠ <strong>${sem} serviço${sem>1?'s':''} sem funcionário atribuído</strong> — verifique e agende.</div>`:'';
+// ── TELA DA OBRA ──────────────────────────────────────────
+function abrirObra(idx){
+  obraAtualIdx=idx;
+  renderObraScreen();
+  document.getElementById('obra-screen').classList.add('open');
+}
+function fecharObra(){
+  document.getElementById('obra-screen').classList.remove('open');
+  obraAtualIdx=null;
+  renderQuadro();
+}
+function renderObraScreen(){
+  if(obraAtualIdx===null)return;
+  const obra=obras[obraAtualIdx];
+  document.getElementById('obra-screen-title').textContent=obra.nome;
+  const info=obraStatusInfo(obra.status);
+  document.getElementById('obra-screen-badge').innerHTML=`<span class="obra-status-badge" style="background:${info.color}22;color:${info.color}">${info.label}</span>`;
+  switchObraTab('proprios');
+}
+function switchObraTab(tab){
+  document.querySelectorAll('.obra-tab').forEach((b,i)=>b.classList.toggle('active',['proprios','terceirizados','compras','documentos','cronograma'][i]===tab));
+  document.querySelectorAll('.obra-tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('obra-tab-'+tab).classList.add('active');
+  renderObraTab(tab);
+}
+function renderObraTab(tab){
+  if(obraAtualIdx===null)return;
+  const obra=obras[obraAtualIdx];
+  const meus=itensObra.filter(it=>it.obra_id===obra.id);
+  if(tab==='proprios'){
+    const lista=meus.filter(it=>it.tipo==='proprio');
+    document.getElementById('obra-tab-proprios').innerHTML=renderItemTable(lista,'proprio');
+  } else if(tab==='terceirizados'){
+    const lista=meus.filter(it=>it.tipo==='terceirizado');
+    document.getElementById('obra-tab-terceirizados').innerHTML=renderItemTable(lista,'terceirizado');
+  } else if(tab==='compras'){
+    const lista=meus.filter(it=>it.tipo==='compra');
+    document.getElementById('obra-tab-compras').innerHTML=renderCompraTable(lista);
+  } else if(tab==='documentos'){renderDocumentos(obra);} else if(tab==='cronograma'){
+    document.getElementById('obra-tab-cronograma').innerHTML='<div id="mini-gantt-wrap"></div>';
+    renderMiniGantt(meus.filter(it=>it.tipo!=='compra'));
+  }
 }
 
-// ── SERVIÇOS ──────────────────────────────────────────────
+function renderItemTable(lista, tipo){
+  if(!lista.length)return`<p class="empty">Nenhum ${tipo==='proprio'?'serviço próprio':'serviço terceirizado'} cadastrado.</p>`;
+  const cor=tipo==='proprio'?'var(--orange)':'var(--blue)';
+  return`<table style="margin-top:1rem">
+    <thead><tr>
+      <th style="width:28%">Serviço</th>
+      <th style="width:22%">${tipo==='proprio'?'Funcionários':'Empresa / Pessoa'}</th>
+      <th style="width:12%">Início</th><th style="width:12%">Fim</th>
+      <th style="width:16%">Status</th>
+      <th style="width:10%"></th>
+    </tr></thead>
+    <tbody>${lista.map(it=>{
+      const i=itensObra.indexOf(it);
+      const resp=tipo==='proprio'?(it.funcs||[]).map(f=>`<span class="chip" style="background:${corFunc(f)}">${f}</span>`).join(''):(it.terceiro||'—');
+      return`<tr>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer" title="${it.nome}">${it.nome}</td>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer;white-space:normal;line-height:1.8">${resp}</td>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer">${fmtDate(it.inicio)}</td>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer">${fmtDate(it.fim)}</td>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer"><span class="badge ${badgeClass(it.status)}">${statusLabel(it.status)}</span></td>
+        <td><button class="btn btn-dup" style="font-size:11px;padding:3px 10px" onclick="duplicarItem(${i})">Duplicar</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function renderCompraTable(lista){
+  if(!lista.length)return`<p class="empty">Nenhuma compra cadastrada.</p>`;
+  return`<table style="margin-top:1rem">
+    <thead><tr><th style="width:60%">Material</th><th style="width:25%">Status</th><th style="width:15%"></th></tr></thead>
+    <tbody>${lista.map(it=>{
+      const i=itensObra.indexOf(it);
+      return`<tr>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer">${it.nome}</td>
+        <td onclick="abrirModalItem(${i})" style="cursor:pointer"><span class="badge ${badgeClass(it.status)}">${statusLabel(it.status)}</span></td>
+        <td><button class="btn btn-dup" style="font-size:11px;padding:3px 10px" onclick="duplicarItem(${i})">Duplicar</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+
+const DOCS_LIST=["Emissão de contrato", "Emissão de boletos", "Emissão de ART", "Termo compromisso profissionais", "Vistoria fotos iniciais", "Lista de insumos iniciais", "Comunicado início de obra", "Abertura de grupo com síndico", "Orçamento no sistema", "Seguro de obra", "Placa de obra", "Cronograma"];
+
+function renderDocumentos(obra){
+  const docsObra=itensObra.filter(it=>it.obra_id===obra.id&&it.tipo==='documento');
+  const wrap=document.getElementById('obra-tab-documentos');
+  const rows=DOCS_LIST.map(doc=>{
+    const found=docsObra.find(it=>it.nome===doc);
+    const feito=found&&found.status==='comprado'; // reuse 'comprado' as 'feito'
+    const obs=found?found.terceiro||'':'';
+    const id=found?found.id:null;
+    return`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border)">
+      <input type="checkbox" ${feito?'checked':''} onchange="toggleDoc('${obra.id}','${doc.replace(/'/g,"\\'")}',${id?`'${id}'`:'null'},this.checked)"
+        style="width:16px;height:16px;accent-color:var(--orange);flex-shrink:0;cursor:pointer" />
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:${feito?'var(--text3)':'var(--text)'};text-decoration:${feito?'line-through':'none'}">${doc}</div>
+        ${obs?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${obs}</div>`:''}
+      </div>
+      <span class="badge ${feito?'b-comprado':'b-comprar'}">${feito?'Feito':'Pendente'}</span>
+    </div>`;
+  }).join('');
+  const total=DOCS_LIST.length;
+  const feitos=docsObra.filter(it=>it.status==='comprado').length;
+  wrap.innerHTML=`<div style="margin-bottom:1rem;font-size:13px;color:var(--text2)">${feitos} de ${total} documentos concluídos</div>${rows}`;
+}
+
+async function toggleDoc(obraId,nome,existingId,checked){
+  setSyncStatus('loading');
+  try{
+    if(existingId){
+      await sb.from('itens_obra').update({status:checked?'comprado':'a-comprar'}).eq('id',existingId);
+    }else{
+      await sb.from('itens_obra').insert({obra_id:obraId,tipo:'documento',nome,status:checked?'comprado':'a-comprar',funcs:[]});
+    }
+    setSyncStatus('ok');
+    await carregarTudo();
+    renderDocumentos(obras.find(o=>o.id===obraId));
+  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+}
+
+// Mini Gantt da obra
+function renderMiniGantt(lista){
+  const wrap=document.getElementById('mini-gantt-wrap');
+  if(!lista.length){wrap.innerHTML='<p class="empty">Nenhum serviço com data cadastrado.</p>';return;}
+  const itensComData=lista.filter(it=>it.inicio&&it.fim&&dateValida(it.inicio)&&dateValida(it.fim));
+  if(!itensComData.length){wrap.innerHTML='<p class="empty">Nenhum serviço com datas definidas.</p>';return;}
+
+  const today=new Date();today.setHours(0,0,0,0);
+  let firstDate=new Date(today);firstDate.setDate(1);
+  let lastDate=new Date(today);lastDate.setMonth(lastDate.getMonth()+1);
+  itensComData.forEach(it=>{
+    const[sy,sm,sd]=it.inicio.split('-').map(Number);const s=new Date(sy,sm-1,sd);
+    const[ey,em,ed]=it.fim.split('-').map(Number);const e=new Date(ey,em-1,ed);
+    if(s<firstDate)firstDate=new Date(s.getFullYear(),s.getMonth(),1);
+    if(e>lastDate)lastDate=e;
+  });
+  lastDate.setDate(lastDate.getDate()+3);
+
+  const days=[];const cur=new Date(firstDate);
+  while(cur<=lastDate){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+
+  const mg=[];let cm=-1,cy=-1,cnt=0;
+  days.forEach(d=>{
+    if(d.getMonth()!==cm||d.getFullYear()!==cy){if(mg.length)mg[mg.length-1].count=cnt;mg.push({label:d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.',''),count:0});cm=d.getMonth();cy=d.getFullYear();cnt=0;}cnt++;
+  });
+  if(mg.length)mg[mg.length-1].count=cnt;
+
+  function dayIdx(str){const[y,m,day]=str.split('-').map(Number);const d=new Date(y,m-1,day);const i=days.findIndex(x=>x.getTime()===d.getTime());return i>=0?i:(d<days[0]?0:days.length-1);}
+
+  const monthsHtml=mg.map(m=>`<div class="gantt-month-cell" style="width:${m.count*DW}px">${m.label}</div>`).join('');
+  const daysHtml=days.map(d=>{const isT=d.getTime()===today.getTime();const isW=d.getDay()===0||d.getDay()===6;return`<div class="gantt-day-cell ${isT?'today':isW?'weekend':''}" style="width:${DW}px">${d.getDate()}</div>`;}).join('');
+
+  const LW=180;
+  const rows=itensComData.map(it=>{
+    const cor=it.tipo==='proprio'?CORES[0]:'#534AB7';
+    const si=dayIdx(it.inicio);const ei=dayIdx(it.fim);
+    const left=si*DW;const width=Math.max(DW,(ei-si+1)*DW);
+    const bgCells=days.map(d=>{const isT=d.getTime()===today.getTime();const isW=d.getDay()===0||d.getDay()===6;return`<div class="g-cell ${isT?'today-col':isW?'weekend-col':''}" style="width:${DW}px;height:22px"></div>`;}).join('');
+    return`<div style="display:flex;border-bottom:0.5px solid var(--border);height:26px">
+      <div style="width:${LW}px;min-width:${LW}px;padding:4px 8px;border-right:1px solid var(--border);background:var(--surface);position:sticky;left:0;z-index:4;display:flex;align-items:center;gap:6px;height:26px;box-shadow:2px 0 4px rgba(0,0,0,0.06);">
+        <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${it.nome}</div>
+        ${it.fim?`<div style="font-size:10px;color:var(--text2);white-space:nowrap;flex-shrink:0">${fmtDate(it.fim)}</div>`:''}
+      </div>
+      <div style="flex:1;position:relative;height:26px">
+        <div style="display:flex;position:absolute;inset:0;pointer-events:none">${bgCells}</div>
+        <div class="gantt-bar" style="left:${left}px;width:${width}px;background:${cor};top:5px" title="${it.nome}">${it.nome}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML=`<div class="mini-gantt-scroll"><div style="width:max-content;min-width:100%">
+    <div style="display:flex;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:5">
+      <div style="width:${LW}px;min-width:${LW}px;border-right:1px solid var(--border);padding:5px 8px;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;position:sticky;left:0;z-index:5;background:var(--bg);box-shadow:2px 0 4px rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;"><span>Serviço</span><span style="color:var(--text3)">Data final</span></div>
+      <div style="display:flex">${monthsHtml}</div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--border2)">
+      <div style="width:${LW}px;min-width:${LW}px;border-right:1px solid var(--border);position:sticky;left:0;z-index:5;background:var(--bg);box-shadow:2px 0 4px rgba(0,0,0,0.06)"></div>
+      <div style="display:flex">${daysHtml}</div>
+    </div>
+    ${rows}
+  </div></div>`;
+
+  const todayIdx=days.findIndex(d=>d.getTime()===today.getTime());
+  setTimeout(()=>{const sc=wrap.querySelector('.mini-gantt-scroll');if(sc)sc.scrollLeft=Math.max(0,(todayIdx-7)*DW);},50);
+}
+
+// ── MODAL ITEM ────────────────────────────────────────────
+function atualizarCamposItem(){
+  const tipo=document.getElementById('mi-tipo').value;
+  document.getElementById('mi-campos-servico').style.display=tipo==='compra'?'none':'block';
+  document.getElementById('mi-campos-compra').style.display=tipo==='compra'?'block':'none';
+  document.getElementById('mi-row-funcs').style.display=tipo==='proprio'?'block':'none';
+  document.getElementById('mi-row-terceiro').style.display=tipo==='terceirizado'?'block':'none';
+  document.getElementById('mi-nome-label').textContent=tipo==='compra'?'Nome do material':'Nome do serviço';
+}
+function abrirModalItem(idx){
+  editIIdx=idx!==undefined?idx:null;
+  document.getElementById('mi-titulo').textContent=editIIdx!==null?'Editar item':'Novo item';
+  document.getElementById('mi-excluir').style.display=editIIdx!==null?'inline-block':'none';
+  const it=editIIdx!==null?itensObra[editIIdx]:{};
+  document.getElementById('mi-tipo').value=it.tipo||'proprio';
+  document.getElementById('mi-nome').value=it.nome||'';
+  document.getElementById('mi-terceiro').value=it.terceiro||'';
+  document.getElementById('mi-inicio').value=it.inicio||'';
+  document.getElementById('mi-fim').value=it.fim||'';
+  document.getElementById('mi-status').value=it.status||'sem-agenda';
+  document.getElementById('mi-status-compra').value=it.status||'a-comprar';
+  selFuncs=[...(it.funcs||[])];
+  renderChipsMI();
+  atualizarCamposItem();
+  document.getElementById('modal-item').classList.add('open');
+  setTimeout(setupFuncInputMI,50);
+}
+async function salvarItem(){
+  if(obraAtualIdx===null)return;
+  const tipo=document.getElementById('mi-tipo').value;
+  const nome=document.getElementById('mi-nome').value.trim();
+  const inicio=document.getElementById('mi-inicio').value;
+  const fim=document.getElementById('mi-fim').value;
+  if(!nome){alert('Preencha o nome.');return;}
+  if(inicio&&!dateValida(inicio)){alert('Data de início inválida.');return;}
+  if(fim&&!dateValida(fim)){alert('Data de fim inválida.');return;}
+  if(inicio&&fim&&inicio>fim){alert('Data de início não pode ser maior que data de fim.');return;}
+  const status=tipo==='compra'?document.getElementById('mi-status-compra').value:document.getElementById('mi-status').value;
+  const dados={obra_id:obras[obraAtualIdx].id,tipo,nome,inicio:inicio||null,fim:fim||null,status,
+    funcs:tipo==='proprio'?selFuncs:[],
+    terceiro:tipo==='terceirizado'?document.getElementById('mi-terceiro').value.trim():null};
+  setSyncStatus('loading');
+  try{
+    if(editIIdx!==null){await sb.from('itens_obra').update(dados).eq('id',itensObra[editIIdx].id);}
+    else{await sb.from('itens_obra').insert(dados);}
+    setSyncStatus('ok');fecharModal('modal-item');await carregarTudo();renderObraScreen();
+  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+}
+async function duplicarItem(idx){
+  const it=itensObra[idx];
+  const novo={obra_id:it.obra_id,tipo:it.tipo,nome:it.nome+' (cópia)',funcs:[...(it.funcs||[])],terceiro:it.terceiro||null,inicio:it.inicio||null,fim:it.fim||null,status:it.status};
+  setSyncStatus('loading');
+  try{
+    await sb.from('itens_obra').insert(novo);
+    setSyncStatus('ok');await carregarTudo();renderObraScreen();
+  }catch(e){setSyncStatus('err');alert('Erro ao duplicar.');}
+}
+
+async function excluirItem(){
+  if(editIIdx===null)return;
+  if(!confirm('Excluir este item?'))return;
+  await sb.from('itens_obra').delete().eq('id',itensObra[editIIdx].id);
+  setSyncStatus('ok');fecharModal('modal-item');await carregarTudo();renderObraScreen();
+}
+
+// Autocomplete para modal-item
+function renderChipsMI(){document.getElementById('mi-chips').innerHTML=selFuncs.map(f=>`<span class="mchip" style="background:${corFunc(f)}">${f}<span class="mchip-x" onclick="removerChipMI('${f.replace(/'/g,"\\'")}')">×</span></span>`).join('');}
+function removerChipMI(nome){selFuncs=selFuncs.filter(f=>f!==nome);renderChipsMI();}
+function adicionarFuncMI(nome){if(nome&&!selFuncs.includes(nome))selFuncs.push(nome);renderChipsMI();document.getElementById('mi-finput').value='';document.getElementById('mi-suggest').style.display='none';}
+function setupFuncInputMI(){
+  const inp=document.getElementById('mi-finput');const sug=document.getElementById('mi-suggest');if(!inp||!sug)return;
+  inp.oninput=function(){const val=inp.value.trim().toLowerCase();if(!val){sug.style.display='none';return;}
+    const matches=funcionarios.filter(f=>f.nome.toLowerCase().includes(val)&&!selFuncs.includes(f.nome));
+    if(!matches.length){sug.style.display='none';return;}
+    sug.innerHTML=matches.map(f=>`<div class="suggest-item" onmousedown="adicionarFuncMI('${f.nome.replace(/'/g,"\\'")}')"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:${corFunc(f.nome)}">${iniciais(f.nome)}</div><div><div style="font-weight:500">${f.nome}</div><div style="font-size:11px;color:var(--text2)">${f.funcao}</div></div></div>`).join('');
+    sug.style.display='block';};
+  inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();const first=sug.querySelector('.suggest-item');if(first&&sug.style.display!=='none'){first.dispatchEvent(new Event('mousedown'));return;}const val=inp.value.trim();if(val)adicionarFuncMI(val);}
+    else if(e.key==='Backspace'&&inp.value===''&&selFuncs.length){selFuncs.pop();renderChipsMI();}
+    else if(e.key==='Escape')sug.style.display='none';};
+  inp.onblur=function(){setTimeout(()=>{sug.style.display='none';},150);};
+}
+
+// ── ABA SERVIÇOS (visão geral) ────────────────────────────
+function renderMetrics(alertId,metricsId,filtroAtivo){
+  const obrasAtivasIds=new Set(obras.filter(o=>['aprovado','executando','manutencao','finalizado'].includes(o.status)).map(o=>o.id));
+  const proprios=itensObra.filter(it=>it.tipo==='proprio'&&obrasAtivasIds.has(it.obra_id));
+  const terceirizados=itensObra.filter(it=>it.tipo==='terceirizado'&&obrasAtivasIds.has(it.obra_id));
+  const compras=itensObra.filter(it=>it.tipo==='compra'&&obrasAtivasIds.has(it.obra_id));
+  const documentos=itensObra.filter(it=>it.tipo==='documento'&&obrasAtivasIds.has(it.obra_id));
+  const proprioSemAgenda=proprios.filter(it=>it.status==='sem-agenda').length;
+  const terceiroSemAgenda=terceirizados.filter(it=>it.status==='sem-agenda').length;
+  const comprasAFazer=compras.filter(it=>it.status==='a-comprar').length;
+  // count docs pendentes: obras aprovadas/executando com docs nao feitos
+  const obrasAtivas=obras.filter(o=>['aprovado','executando','manutencao','finalizado'].includes(o.status));
+  let docsPendentes=0;
+  obrasAtivas.forEach(o=>{
+    const docsFeitos=itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='documento'&&it.status==='comprado').length;
+    docsPendentes+=DOCS_LIST.length-docsFeitos;
+  });
+
+  const cards=[
+    {key:'proprio',label:'Próprio sem agenda',value:proprioSemAgenda,color:'var(--red)'},
+    {key:'terceirizado',label:'Terceirizado sem agenda',value:terceiroSemAgenda,color:'var(--blue)'},
+    {key:'compra',label:'Compras a fazer',value:comprasAFazer,color:'var(--amber)'},
+    {key:'documento',label:'Documentos pendentes',value:docsPendentes,color:'var(--text2)'},
+  ];
+
+  document.getElementById(metricsId).innerHTML=cards.map(c=>`
+    <div class="metric" onclick="filtrarPorCard('${filtroAtivo||''}','${metricsId}','${alertId}','${c.key}')"
+      style="cursor:pointer;border-color:${filtroAtivo===c.key?c.color:'var(--border)'};transition:border-color 0.15s">
+      <div class="metric-label">${c.label}</div>
+      <div class="metric-value" style="color:${c.value>0?c.color:'var(--text)'}">${c.value}</div>
+    </div>`).join('');
+
+  const total=proprioSemAgenda+terceiroSemAgenda+comprasAFazer+docsPendentes;
+  document.getElementById(alertId).innerHTML=total>0?`<div class="alert">⚠ <strong>${total} pendência${total>1?'s':''} em aberto</strong></div>`:'<div class="alert" style="background:var(--green-light);border-color:var(--green);color:var(--green)">✓ Sem pendências em aberto</div>';
+}
+
+let filtroCardAtivo='';
+
+function limparFiltrosPendencias(){
+  document.getElementById('search').value='';
+  document.getElementById('filter-tipo').value='';
+  document.getElementById('filter-status').value='';
+  filtroCardAtivo='';
+  atualizarFiltroStatus();
+  renderServicos();
+}
+
+function onSearchPendencias(){
+  const inp=document.getElementById('search');
+  const sug=document.getElementById('search-pend-suggest');
+  const val=inp.value.trim().toLowerCase();
+  renderServicos();
+  if(!val){sug.style.display='none';return;}
+  // suggest obra names and item names
+  const sugestoes=new Set();
+  obras.forEach(o=>{if(o.nome.toLowerCase().includes(val))sugestoes.add(o.nome);});
+  itensObra.forEach(it=>{if(it.nome.toLowerCase().includes(val))sugestoes.add(it.nome);});
+  const matches=[...sugestoes].slice(0,8);
+  if(!matches.length){sug.style.display='none';return;}
+  sug.innerHTML=matches.map(m=>`<div class="suggest-item" onmousedown="selecionarPendencia('${m.replace(/'/g,"\'")}')">${m}</div>`).join('');
+  sug.style.display='block';
+}
+
+function selecionarPendencia(val){
+  document.getElementById('search').value=val;
+  document.getElementById('search-pend-suggest').style.display='none';
+  renderServicos();
+}
+
+// close on blur
+document.addEventListener('click',function(e){
+  const sug=document.getElementById('search-pend-suggest');
+  const inp=document.getElementById('search');
+  if(sug&&inp&&!inp.contains(e.target)&&!sug.contains(e.target))sug.style.display='none';
+});
+
+function atualizarFiltroStatus(){
+  const ft=document.getElementById('filter-tipo').value;
+  const sel=document.getElementById('filter-status');
+  const cur=sel.value;
+  let opts='<option value="">Todos os status</option>';
+  if(!ft||ft==='proprio'||ft==='terceirizado'){
+    opts+=`<option value="sem-agenda">Sem agenda</option>
+      <option value="agendado">Agendado</option>
+      <option value="execucao">Em execução</option>
+      <option value="concluido">Concluído</option>`;
+  } else if(ft==='compra'){
+    opts+=`<option value="a-comprar">Pendente</option>
+      <option value="comprado">Realizado</option>`;
+  } else if(ft==='documento'){
+    opts+=`<option value="nao-feito">Pendente</option>
+      <option value="feito">Realizado</option>`;
+  }
+  sel.innerHTML=opts;
+  // try to keep current value if still valid
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+  renderServicos();
+}
+function filtrarPorCard(filtroAtual,metricsId,alertId,chave){
+  if(filtroCardAtivo===chave){
+    filtroCardAtivo='';
+    document.getElementById('filter-tipo').value='';
+    document.getElementById('filter-status').value='';
+    atualizarFiltroStatus();
+    return;
+  }
+  filtroCardAtivo=chave;
+  if(chave==='proprio'){document.getElementById('filter-tipo').value='proprio';}
+  else if(chave==='terceirizado'){document.getElementById('filter-tipo').value='terceirizado';}
+  else if(chave==='compra'){document.getElementById('filter-tipo').value='compra';}
+  else if(chave==='documento'){document.getElementById('filter-tipo').value='documento';}
+  atualizarFiltroStatus();
+  // set pending status after options are updated
+  if(chave==='proprio'||chave==='terceirizado'){document.getElementById('filter-status').value='sem-agenda';}
+  else if(chave==='compra'){document.getElementById('filter-status').value='a-comprar';}
+  else if(chave==='documento'){document.getElementById('filter-status').value='nao-feito';}
+  renderServicos();
+}
+
 function renderServicos(){
-  renderMetrics('alert-s','metrics-s');
+  renderMetrics('alert-s','metrics-s',filtroCardAtivo);
   const q=document.getElementById('search').value.toLowerCase();
+  const ft=document.getElementById('filter-tipo').value;
   const fs=document.getElementById('filter-status').value;
-  const lista=servicos.filter(s=>(s.obra+s.servico+(s.funcs||[]).join(' ')).toLowerCase().includes(q)&&(!fs||s.status===fs));
+  // For 'nao-feito' filter: generate virtual rows for unchecked docs
+  const obrasAtivasIdsS=new Set(obras.filter(o=>['aprovado','executando','manutencao','finalizado'].includes(o.status)).map(o=>o.id));
+  let lista=[];
+  if(fs==='nao-feito'||ft==='documento'){
+    const obrasAtivas=obras.filter(o=>['aprovado','executando','manutencao','finalizado'].includes(o.status));
+    obrasAtivas.forEach(o=>{
+      DOCS_LIST.forEach(doc=>{
+        const found=itensObra.find(it=>it.obra_id===o.id&&it.tipo==='documento'&&it.nome===doc);
+        if(fs==='nao-feito'&&found&&found.status==='comprado')return; // skip feitos
+        if(fs==='feito'&&(!found||found.status!=='comprado'))return; // skip nao feitos
+        const virtual={
+          id:found?found.id:null,
+          obra_id:o.id,tipo:'documento',nome:doc,
+          status:found?found.status:'a-comprar',
+          funcs:[],terceiro:null,inicio:null,fim:null,_virtual:!found
+        };
+        const obraNome=o.nome;
+        const matchQ=(obraNome+doc).toLowerCase().includes(q);
+        if(matchQ)lista.push({...virtual,_obraNome:obraNome});
+      });
+    });
+  } else {
+    lista=itensObra.filter(it=>{
+      if(!obrasAtivasIdsS.has(it.obra_id))return false;
+      const obra=obras.find(o=>o.id===it.obra_id);
+      const obraNome=obra?obra.nome:'';
+      const matchQ=(obraNome+it.nome+(it.funcs||[]).join(' ')+(it.terceiro||'')).toLowerCase().includes(q);
+      const matchT=!ft||it.tipo===ft;
+      let matchS=false;
+      if(!fs){matchS=true;}
+      else if(fs==='feito'){matchS=it.tipo==='documento'&&it.status==='comprado';}
+      else if(fs==='comprado'){matchS=it.tipo==='compra'&&it.status==='comprado';}
+      else if(fs==='a-comprar'){matchS=it.tipo==='compra'&&it.status==='a-comprar';}
+      else{matchS=it.tipo!=='documento'&&it.status===fs;}
+      return matchQ&&matchT&&matchS;
+    }).map(it=>{const obra=obras.find(o=>o.id===it.obra_id);return{...it,_obraNome:obra?obra.nome:'—'};});
+  }
   const tbody=document.getElementById('tbody-s');
   if(!lista.length){tbody.innerHTML=`<tr><td colspan="7" class="empty">Nenhum serviço encontrado.</td></tr>`;renderListaCompromissos();return;}
-  tbody.innerHTML=lista.map(s=>{
-    const i=servicos.indexOf(s);
-    const chips=(s.funcs||[]).length?(s.funcs||[]).map(f=>`<span class="chip" style="background:${corFunc(f)}">${f}</span>`).join(''):'<span style="color:var(--text3);font-style:italic">—</span>';
+  tbody.innerHTML=lista.map(it=>{
+    const obraNome=it._obraNome||(obras.find(o=>o.id===it.obra_id)?.nome||'—');
+    let resp='—', tipoTag='';
+    if(it.tipo==='proprio'){resp=(it.funcs||[]).map(f=>`<span class="chip" style="background:${corFunc(f)}">${f}</span>`).join('')||'—';tipoTag=`<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:var(--orange-light);color:var(--orange)">Próprio</span>`;}
+    else if(it.tipo==='terceirizado'){resp=it.terceiro||'—';tipoTag=`<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:var(--blue-light);color:var(--blue)">Terceirizado</span>`;}
+    else if(it.tipo==='documento'){resp='—';tipoTag=`<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:var(--surface2);color:var(--text2)">Documento</span>`;}
+    else{resp='—';tipoTag=`<span style="font-size:10px;padding:2px 7px;border-radius:999px;background:var(--amber-light);color:var(--amber)">Compra</span>`;}
     return`<tr>
-      <td onclick="abrirServico(${i})"><span class="tag">${s.obra}</span></td>
-      <td onclick="abrirServico(${i})" title="${s.servico}">${s.servico}</td>
-      <td onclick="abrirServico(${i})" style="white-space:normal;line-height:1.8">${chips}</td>
-      <td onclick="abrirServico(${i})">${fmtDate(s.inicio)}</td>
-      <td onclick="abrirServico(${i})">${fmtDate(s.fim)}</td>
-      <td onclick="abrirServico(${i})"><span class="badge ${badgeClass(s.status)}">${statusLabel(s.status)}</span></td>
-      <td><button class="btn btn-dup" style="font-size:11px;padding:4px 10px" onclick="duplicarServico(${i})">Duplicar</button></td>
+      <td><span class="tag">${obraNome}</span></td>
+      <td title="${it.nome}">${it.nome}</td>
+      <td>${tipoTag}</td>
+      <td style="white-space:normal;line-height:1.8">${resp}</td>
+      <td>${it.tipo!=='compra'?fmtDate(it.inicio):'—'}</td>
+      <td>${it.tipo!=='compra'?fmtDate(it.fim):'—'}</td>
+      <td><span class="badge ${it.tipo==='documento'?(it.status==='comprado'?'b-concluido':'b-sem'):it.tipo==='compra'?(it.status==='comprado'?'b-concluido':'b-sem'):badgeClass(it.status)}">${it.tipo==='documento'?(it.status==='comprado'?'Realizado':'Pendente'):it.tipo==='compra'?(it.status==='comprado'?'Realizado':'Pendente'):statusLabel(it.status)}</span></td>
     </tr>`;
   }).join('');
   renderListaCompromissos();
@@ -492,90 +1035,6 @@ function renderListaCompromissos(){
     </div>`).join('');
 }
 
-function buildObraSelect(val){
-  const sel=document.getElementById('ms-obra-sel');
-  const obrasAtivas=obras.filter(o=>o.status==='aprovado'||o.status==='executando');
-  sel.innerHTML='<option value="">— selecione uma obra —</option>'+
-    obrasAtivas.map(o=>`<option value="${o.nome}"${o.nome===val?' selected':''}>${o.nome}</option>`).join('');
-  // also add the current value if not in list (for editing old records)
-  if(val&&!obrasAtivas.find(o=>o.nome===val)){
-    sel.innerHTML+=`<option value="${val}" selected>${val}</option>`;
-  }
-}
-
-function abrirServico(idx){
-  editSIdx=idx!==undefined?idx:null;
-  document.getElementById('ms-titulo').textContent=editSIdx!==null?'Editar serviço':'Novo serviço';
-  document.getElementById('ms-excluir').style.display=editSIdx!==null?'inline-block':'none';
-  const s=editSIdx!==null?servicos[editSIdx]:{};
-  buildObraSelect(s.obra||'');
-  document.getElementById('ms-servico').value=s.servico||'';
-  document.getElementById('ms-inicio').value=s.inicio||'';
-  document.getElementById('ms-fim').value=s.fim||'';
-  document.getElementById('ms-status').value=s.status||'sem-agenda';
-  selFuncs=[...(s.funcs||[])];
-  renderChips();
-  document.getElementById('ms-finput').value='';
-  document.getElementById('ms-suggest').style.display='none';
-  document.getElementById('modal-s').classList.add('open');
-  setTimeout(setupFuncInput,50);
-}
-
-async function duplicarServico(idx){
-  const s=servicos[idx];
-  const novo={obra:s.obra,servico:s.servico+' (cópia)',funcs:[...(s.funcs||[])],inicio:s.inicio||null,fim:s.fim||null,status:s.status};
-  setSyncStatus('loading');
-  try{await sb.from('servicos').insert(novo);setSyncStatus('ok');await carregarTudo();renderServicos();}
-  catch(e){setSyncStatus('err');alert('Erro ao duplicar.');}
-}
-
-async function salvarServico(){
-  const obra=document.getElementById('ms-obra-sel').value;
-  const servico=document.getElementById('ms-servico').value.trim();
-  const inicio=document.getElementById('ms-inicio').value;
-  const fim=document.getElementById('ms-fim').value;
-
-  // Validate dates
-  if(inicio&&!dateValida(inicio)){alert('Data de início inválida. Verifique o dia/mês informado.');return;}
-  if(fim&&!dateValida(fim)){alert('Data de fim inválida. Verifique o dia/mês informado.');return;}
-  if(inicio&&fim&&inicio>fim){alert('A data de início não pode ser maior que a data de fim.');return;}
-
-  const dados={obra,servico,funcs:selFuncs,inicio:inicio||null,fim:fim||null,status:document.getElementById('ms-status').value};
-  if(!obra){alert('Selecione uma obra.');return;}
-  if(!servico){alert('Preencha o nome do serviço.');return;}
-  if(!dados.funcs.length)dados.status='sem-agenda';
-  setSyncStatus('loading');
-  try{
-    if(editSIdx!==null){await sb.from('servicos').update(dados).eq('id',servicos[editSIdx].id);}
-    else{await sb.from('servicos').insert(dados);}
-    setSyncStatus('ok');fecharModal('modal-s');await carregarTudo();renderServicos();
-  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
-}
-
-async function excluirServico(){
-  if(editSIdx===null)return;
-  if(!confirm('Excluir este serviço?'))return;
-  await sb.from('servicos').delete().eq('id',servicos[editSIdx].id);
-  setSyncStatus('ok');fecharModal('modal-s');await carregarTudo();renderServicos();
-}
-
-// ── AUTOCOMPLETE ──────────────────────────────────────────
-function renderChips(){document.getElementById('ms-chips').innerHTML=selFuncs.map(f=>`<span class="mchip" style="background:${corFunc(f)}">${f}<span class="mchip-x" onclick="removerChip('${f.replace(/'/g,"\\'")}')">×</span></span>`).join('');}
-function removerChip(nome){selFuncs=selFuncs.filter(f=>f!==nome);renderChips();}
-function adicionarFunc(nome){if(nome&&!selFuncs.includes(nome))selFuncs.push(nome);renderChips();document.getElementById('ms-finput').value='';document.getElementById('ms-suggest').style.display='none';}
-function setupFuncInput(){
-  const inp=document.getElementById('ms-finput');const sug=document.getElementById('ms-suggest');if(!inp||!sug)return;
-  inp.oninput=function(){const val=inp.value.trim().toLowerCase();if(!val){sug.style.display='none';return;}
-    const matches=funcionarios.filter(f=>f.nome.toLowerCase().includes(val)&&!selFuncs.includes(f.nome));
-    if(!matches.length){sug.style.display='none';return;}
-    sug.innerHTML=matches.map(f=>`<div class="suggest-item" onmousedown="adicionarFunc('${f.nome.replace(/'/g,"\\'")}')"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:${corFunc(f.nome)}">${iniciais(f.nome)}</div><div><div style="font-weight:500">${f.nome}</div><div style="font-size:11px;color:var(--text2)">${f.funcao}</div></div></div>`).join('');
-    sug.style.display='block';};
-  inp.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();const first=sug.querySelector('.suggest-item');if(first&&sug.style.display!=='none'){first.dispatchEvent(new Event('mousedown'));return;}const val=inp.value.trim();if(val)adicionarFunc(val);}
-    else if(e.key==='Backspace'&&inp.value===''&&selFuncs.length){selFuncs.pop();renderChips();}
-    else if(e.key==='Escape')sug.style.display='none';};
-  inp.onblur=function(){setTimeout(()=>{sug.style.display='none';},150);};
-}
-
 // ── COMPROMISSOS ──────────────────────────────────────────
 function abrirCompromisso(idx){
   editCIdx=idx!==undefined?idx:null;
@@ -584,25 +1043,19 @@ function abrirCompromisso(idx){
   const sel=document.getElementById('mc-func');
   sel.innerHTML=funcionarios.map(f=>`<option value="${f.nome}">${f.nome} (${f.funcao})</option>`).join('');
   const c=editCIdx!==null?compromissos[editCIdx]:{};
-  sel.value=c.func||'';
-  document.getElementById('mc-desc').value=c.desc||'';
-  document.getElementById('mc-inicio').value=c.inicio||'';
-  document.getElementById('mc-fim').value=c.fim||'';
+  sel.value=c.func||'';document.getElementById('mc-desc').value=c.desc||'';
+  document.getElementById('mc-inicio').value=c.inicio||'';document.getElementById('mc-fim').value=c.fim||'';
   document.getElementById('modal-c').classList.add('open');
 }
 async function salvarCompromisso(){
-  const inicio=document.getElementById('mc-inicio').value;
-  const fim=document.getElementById('mc-fim').value;
-  if(inicio&&!dateValida(inicio)){alert('Data de início inválida.');return;}
-  if(fim&&!dateValida(fim)){alert('Data de fim inválida.');return;}
+  const inicio=document.getElementById('mc-inicio').value;const fim=document.getElementById('mc-fim').value;
+  if(inicio&&!dateValida(inicio)){alert('Data inválida.');return;}if(fim&&!dateValida(fim)){alert('Data inválida.');return;}
   const dados={func:document.getElementById('mc-func').value,descricao:document.getElementById('mc-desc').value.trim(),inicio:inicio||null,fim:fim||null};
   if(!dados.func||!dados.descricao||!dados.inicio||!dados.fim){alert('Preencha todos os campos.');return;}
   setSyncStatus('loading');
-  try{
-    if(editCIdx!==null){await sb.from('compromissos').update(dados).eq('id',compromissos[editCIdx].id);}
-    else{await sb.from('compromissos').insert(dados);}
-    setSyncStatus('ok');fecharModal('modal-c');await carregarTudo();renderServicos();
-  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+  try{if(editCIdx!==null){await sb.from('compromissos').update(dados).eq('id',compromissos[editCIdx].id);}else{await sb.from('compromissos').insert(dados);}
+    setSyncStatus('ok');fecharModal('modal-c');await carregarTudo();renderServicos();}
+  catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 async function excluirCompromisso(){
   if(editCIdx===null)return;if(!confirm('Excluir?'))return;
@@ -613,17 +1066,30 @@ async function excluirCompromisso(){
 // ── FUNCIONÁRIOS ──────────────────────────────────────────
 function renderFuncionarios(){
   const grid=document.getElementById('func-grid');
-  if(!funcionarios.length){grid.innerHTML=`<p class="empty">Nenhum funcionário cadastrado.</p>`;return;}
-  grid.innerHTML=funcionarios.map((f,i)=>{
+  const q=(document.getElementById('search-func')?.value||'').toLowerCase();
+  const fs=document.getElementById('filter-func-status')?.value||'';
+  const lista=funcionarios.filter(f=>
+    (f.nome.toLowerCase().includes(q)||(f.funcao||'').toLowerCase().includes(q))&&
+    (!fs||(f.ativo||'ativo')===fs)
+  );
+  if(!lista.length){grid.innerHTML=`<p class="empty">Nenhum funcionário encontrado.</p>`;return;}
+  grid.innerHTML=lista.map(f=>{
+    const i=funcionarios.indexOf(f);
     const cor=CORES[i%CORES.length];
-    const qtd=servicos.filter(s=>(s.funcs||[]).includes(f.nome)&&s.status!=='concluido').length;
-    return`<div class="func-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div class="avatar" style="width:38px;height:38px;font-size:13px;background:${cor}">${iniciais(f.nome)}</div>
-        <div><div style="font-size:14px;font-weight:500">${f.nome}</div><div style="font-size:12px;color:var(--text2)">${f.funcao}</div></div>
+    const qtd=itensObra.filter(it=>it.tipo==='proprio'&&(it.funcs||[]).includes(f.nome)&&it.status!=='concluido').length;
+    const isInativo=(f.ativo||'ativo')==='inativo';
+    return`<div class="func-card" style="opacity:${isInativo?0.6:1}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:38px;height:38px;font-size:13px;background:${cor}">${iniciais(f.nome)}</div>
+          <div><div style="font-size:14px;font-weight:500">${f.nome}</div><div style="font-size:12px;color:var(--text2)">${f.funcao}</div></div>
+        </div>
+        <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;background:${isInativo?'var(--surface2)':'var(--green-light)'};color:${isInativo?'var(--text3)':'var(--green)'}">${isInativo?'Inativo':'Ativo'}</span>
       </div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${qtd} serviço${qtd!==1?'s':''} ativo${qtd!==1?'s':''}</div>
-      <button class="btn" style="font-size:12px;padding:5px 12px" onclick="abrirFunc(${i})">Editar</button>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${qtd} serviço${qtd!==1?'s':''} ativo${qtd!==1?'s':''}</div>
+      ${f.telefone?`<div style="font-size:12px;color:var(--text2);margin-bottom:2px">📞 ${f.telefone}</div>`:''}
+      ${f.pix?`<div style="font-size:12px;color:var(--text2);margin-bottom:2px">Pix: ${f.pix}${f.banco?' ('+f.banco+')':''}</div>`:''}
+      <div style="margin-top:8px"><button class="btn" style="font-size:12px;padding:5px 12px" onclick="abrirFunc(${i})">Editar</button></div>
     </div>`;
   }).join('');
 }
@@ -632,152 +1098,194 @@ function abrirFunc(idx){
   document.getElementById('mf-titulo').textContent=editFIdx!==null?'Editar funcionário':'Novo funcionário';
   document.getElementById('mf-excluir').style.display=editFIdx!==null?'inline-block':'none';
   const f=editFIdx!==null?funcionarios[editFIdx]:{};
-  document.getElementById('mf-nome').value=f.nome||'';
-  document.getElementById('mf-funcao').value=f.funcao||'';
+  document.getElementById('mf-nome').value=f.nome||'';document.getElementById('mf-funcao').value=f.funcao||'';
+  document.getElementById('mf-telefone').value=f.telefone||'';document.getElementById('mf-pix').value=f.pix||'';
+  document.getElementById('mf-favorecido').value=f.favorecido||'';document.getElementById('mf-banco').value=f.banco||'';
+  document.getElementById('mf-ativo').value=f.ativo||'ativo';
   document.getElementById('modal-f').classList.add('open');
 }
 async function salvarFunc(){
-  const nome=document.getElementById('mf-nome').value.trim();
-  const funcao=document.getElementById('mf-funcao').value.trim();
+  const nome=document.getElementById('mf-nome').value.trim();const funcao=document.getElementById('mf-funcao').value.trim();
+  const telefone=document.getElementById('mf-telefone').value.trim();const pix=document.getElementById('mf-pix').value.trim();
+  const favorecido=document.getElementById('mf-favorecido').value.trim();const banco=document.getElementById('mf-banco').value.trim();
+  const ativo=document.getElementById('mf-ativo').value;
   if(!nome){alert('Preencha o nome.');return;}
   setSyncStatus('loading');
   try{
     if(editFIdx!==null){
       const antigo=funcionarios[editFIdx].nome;
-      await sb.from('funcionarios').update({nome,funcao}).eq('id',funcionarios[editFIdx].id);
-      for(const s of servicos.filter(s=>(s.funcs||[]).includes(antigo))){await sb.from('servicos').update({funcs:s.funcs.map(f=>f===antigo?nome:f)}).eq('id',s.id);}
+      await sb.from('funcionarios').update({nome,funcao,telefone,pix,favorecido,banco,ativo}).eq('id',funcionarios[editFIdx].id);
+      for(const it of itensObra.filter(it=>it.tipo==='proprio'&&(it.funcs||[]).includes(antigo))){
+        await sb.from('itens_obra').update({funcs:it.funcs.map(f=>f===antigo?nome:f)}).eq('id',it.id);
+      }
       for(const c of compromissos.filter(c=>c.func===antigo)){await sb.from('compromissos').update({func:nome}).eq('id',c.id);}
-    }else{await sb.from('funcionarios').insert({nome,funcao});}
+    }else{await sb.from('funcionarios').insert({nome,funcao,telefone,pix,favorecido,banco,ativo});}
     setSyncStatus('ok');fecharModal('modal-f');await carregarTudo();renderFuncionarios();
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 async function excluirFunc(){
-  if(editFIdx===null)return;
-  const nome=funcionarios[editFIdx].nome;
-  if(servicos.some(s=>(s.funcs||[]).includes(nome)&&s.status!=='concluido')&&!confirm(`${nome} tem serviços ativos. Excluir?`))return;
-  servicos=servicos.map(s=>{const funcs=(s.funcs||[]).filter(f=>f!==nome);return{...s,funcs,status:funcs.length?s.status:'sem-agenda'};});
+  if(editFIdx===null)return;const nome=funcionarios[editFIdx].nome;
+  if(itensObra.some(it=>it.tipo==='proprio'&&(it.funcs||[]).includes(nome)&&it.status!=='concluido')&&!confirm(`${nome} tem serviços ativos. Excluir?`))return;
   await sb.from('funcionarios').delete().eq('id',funcionarios[editFIdx].id);
   setSyncStatus('ok');fecharModal('modal-f');await carregarTudo();renderFuncionarios();
 }
 
-// ── AGENDA / GANTT ────────────────────────────────────────
+// ── AGENDA / GANTT (só serviços próprios de itens_obra) ───
+let filtroAgendaFuncs=[];
+let agendaSuggestAtual='';
+
+function renderAgendaChips(){
+  const wrap=document.getElementById('agenda-chips');
+  if(!wrap)return;
+  wrap.innerHTML=filtroAgendaFuncs.map(n=>`
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:var(--orange);color:#fff;font-size:12px;font-weight:500">
+      ${n}<span style="cursor:pointer;font-size:14px;line-height:1" onmousedown="removerFuncAgenda('${n.replace(/'/g,"\'")}')">×</span>
+    </span>`).join('');
+}
+
+function removerFuncAgenda(nome){
+  filtroAgendaFuncs=filtroAgendaFuncs.filter(f=>f!==nome);
+  renderAgendaChips();
+  renderAgenda();
+}
+
+function limparFiltroAgenda(){
+  filtroAgendaFuncs=[];
+  agendaSuggestAtual='';
+  document.getElementById('search-agenda').value='';
+  const agSel=document.getElementById('filter-agenda-status');if(agSel)agSel.value='';
+  const sug=document.getElementById('agenda-suggest');
+  if(sug)sug.style.display='none';
+  renderAgendaChips();
+  renderAgenda();
+}
+
+function selecionarFuncAgendaAtual(){
+  if(agendaSuggestAtual&&!filtroAgendaFuncs.includes(agendaSuggestAtual)){
+    filtroAgendaFuncs.push(agendaSuggestAtual);
+    agendaSuggestAtual='';
+    document.getElementById('search-agenda').value='';
+    const sug=document.getElementById('agenda-suggest');
+    if(sug)sug.style.display='none';
+    renderAgendaChips();
+    renderAgenda();
+  }
+}
+
+function selecionarFuncAgenda(nome){
+  agendaSuggestAtual=nome;
+  document.getElementById('search-agenda').value=nome;
+  document.getElementById('agenda-suggest').style.display='none';
+}
+
+function setupAgendaSearch(){
+  const inp=document.getElementById('search-agenda');
+  const sug=document.getElementById('agenda-suggest');
+  if(!inp||!sug)return;
+  inp.oninput=function(){
+    const val=inp.value.trim().toLowerCase();
+    agendaSuggestAtual='';
+    if(!val){sug.style.display='none';return;}
+    const matches=funcionarios.filter(f=>f.nome.toLowerCase().includes(val)&&!filtroAgendaFuncs.includes(f.nome));
+    if(!matches.length){sug.style.display='none';return;}
+    sug.innerHTML=matches.map(f=>`<div class="suggest-item" onmousedown="selecionarFuncAgenda('${f.nome.replace(/'/g,"\'")}')">
+      <div style="font-weight:500">${f.nome}</div>
+      <div style="font-size:11px;color:var(--text2)">${f.funcao}</div>
+    </div>`).join('');
+    sug.style.display='block';
+  };
+  inp.onkeydown=function(e){
+    if(e.key==='Enter'){e.preventDefault();selecionarFuncAgendaAtual();}
+  };
+  inp.onblur=function(){setTimeout(()=>{sug.style.display='none';},150);};
+}
+
 function renderAgenda(){
-  renderMetrics('alert-a','metrics-a');
   const gantt=document.getElementById('gantt');
   if(!funcionarios.length){gantt.innerHTML=`<p class="empty">Nenhum funcionário cadastrado.</p>`;return;}
-
   const today=new Date();today.setHours(0,0,0,0);
-
-  // Find earliest start and latest end across all items
   let firstDate=new Date(today);firstDate.setDate(1);
   let lastDate=new Date(today);lastDate.setMonth(lastDate.getMonth()+1);
 
-  servicos.forEach(s=>{
-    if(s.inicio&&dateValida(s.inicio)){const d=new Date(s.inicio+'T12:00:00');if(d<firstDate)firstDate=new Date(d.getFullYear(),d.getMonth(),1);}
-    if(s.fim&&s.status!=='concluido'&&dateValida(s.fim)){const d=new Date(s.fim+'T12:00:00');if(d>lastDate)lastDate=d;}
+  const servAtivosGlobal=itensObra.filter(it=>it.tipo==='proprio'&&it.inicio&&it.fim&&dateValida(it.inicio)&&dateValida(it.fim)&&it.status!=='concluido');
+  servAtivosGlobal.forEach(it=>{
+    const[sy,sm,sd]=it.inicio.split('-').map(Number);const s=new Date(sy,sm-1,sd);
+    const[ey,em,ed]=it.fim.split('-').map(Number);const e=new Date(ey,em-1,ed);
+    if(s<firstDate)firstDate=new Date(s.getFullYear(),s.getMonth(),1);if(e>lastDate)lastDate=e;
   });
   compromissos.forEach(c=>{
-    if(c.inicio&&dateValida(c.inicio)){const d=new Date(c.inicio+'T12:00:00');if(d<firstDate)firstDate=new Date(d.getFullYear(),d.getMonth(),1);}
-    if(c.fim&&dateValida(c.fim)){const d=new Date(c.fim+'T12:00:00');if(d>lastDate)lastDate=d;}
+    if(c.inicio&&dateValida(c.inicio)){const[y,m,d]=c.inicio.split('-').map(Number);const dt=new Date(y,m-1,d);if(dt<firstDate)firstDate=new Date(dt.getFullYear(),dt.getMonth(),1);}
+    if(c.fim&&dateValida(c.fim)){const[y,m,d]=c.fim.split('-').map(Number);const dt=new Date(y,m-1,d);if(dt>lastDate)lastDate=dt;}
   });
   lastDate.setDate(lastDate.getDate()+5);
 
   const days=[];const cur=new Date(firstDate);
   while(cur<=lastDate){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
-
   const mg=[];let cm=-1,cy=-1,cnt=0;
-  days.forEach(d=>{
-    if(d.getMonth()!==cm||d.getFullYear()!==cy){if(mg.length)mg[mg.length-1].count=cnt;mg.push({label:d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.',''),count:0});cm=d.getMonth();cy=d.getFullYear();cnt=0;}cnt++;
-  });
+  days.forEach(d=>{if(d.getMonth()!==cm||d.getFullYear()!==cy){if(mg.length)mg[mg.length-1].count=cnt;mg.push({label:d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.',''),count:0});cm=d.getMonth();cy=d.getFullYear();cnt=0;}cnt++;});
   if(mg.length)mg[mg.length-1].count=cnt;
+
+  function dayIdx(str){const[y,m,day]=str.split('-').map(Number);const d=new Date(y,m-1,day);const i=days.findIndex(x=>x.getTime()===d.getTime());return i>=0?i:(d<days[0]?0:days.length-1);}
 
   const monthsHtml=mg.map(m=>`<div class="gantt-month-cell" style="width:${m.count*DW}px">${m.label}</div>`).join('');
   const daysHtml=days.map(d=>{const isT=d.getTime()===today.getTime();const isW=d.getDay()===0||d.getDay()===6;return`<div class="gantt-day-cell ${isT?'today':isW?'weekend':''}" style="width:${DW}px">${d.getDate()}</div>`;}).join('');
 
   const funcData=funcionarios.map((f,fi)=>{
     const cor=CORES[fi%CORES.length];
-    const servAtivos=servicos.filter(s=>
-      (s.funcs||[]).map(n=>n.trim().toLowerCase()).includes(f.nome.trim().toLowerCase())&&
-      s.inicio&&s.fim&&dateValida(s.inicio)&&dateValida(s.fim)&&
-      (s.status==='agendado'||s.status==='execucao'||s.status==='ausente')
-    );
+    const agendaStatusFiltro=document.getElementById('filter-agenda-status')?.value||'';
+    const servAtivos=servAtivosGlobal.filter(it=>(it.funcs||[]).map(n=>n.trim().toLowerCase()).includes(f.nome.trim().toLowerCase())&&(it.status==='agendado'||it.status==='execucao'||it.status==='ausente')&&(!agendaStatusFiltro||it.status===agendaStatusFiltro));
     const compAtivos=compromissos.filter(c=>c.func===f.nome&&c.inicio&&c.fim&&dateValida(c.inicio)&&dateValida(c.fim));
-
-    const diasOcupados=servAtivos.filter(s=>s.status!=='ausente').reduce((acc,s)=>{
-      const sS=new Date(Math.max(new Date(s.inicio+'T12:00:00').getTime(),today.getTime()));
-      const sE=new Date(s.fim+'T12:00:00');
-      return acc+Math.max(0,Math.ceil((sE-sS)/86400000)+1);
-    },0);
-
-    const todosItens=[...servAtivos.map(s=>({inicio:s.inicio,fim:s.fim})),...compAtivos.map(c=>({inicio:c.inicio,fim:c.fim}))].filter(i=>new Date(i.fim+'T12:00:00')>=today).sort((a,b)=>new Date(a.inicio+'T12:00:00')-new Date(b.inicio+'T12:00:00'));
+    const diasOcupados=servAtivos.filter(s=>s.status!=='ausente').reduce((acc,s)=>{const[sy,sm,sd]=s.inicio.split('-').map(Number);const[ey,em,ed]=s.fim.split('-').map(Number);const sS=new Date(Math.max(new Date(sy,sm-1,sd).getTime(),today.getTime()));const sE=new Date(ey,em-1,ed);return acc+Math.max(0,Math.ceil((sE-sS)/86400000)+1);},0);
+    const todosItens=[...servAtivos.map(s=>({inicio:s.inicio,fim:s.fim})),...compAtivos.map(c=>({inicio:c.inicio,fim:c.fim}))].filter(i=>{const[y,m,d]=i.fim.split('-').map(Number);return new Date(y,m-1,d)>=today;}).sort((a,b)=>{const[ay,am,ad]=a.inicio.split('-').map(Number);const[by,bm,bd]=b.inicio.split('-').map(Number);return new Date(ay,am-1,ad)-new Date(by,bm-1,bd);});
     const mrg=[];
-    todosItens.forEach(r=>{const rS=new Date(r.inicio+'T12:00:00'),rE=new Date(r.fim+'T12:00:00');if(!mrg.length||rS>new Date(mrg[mrg.length-1].e.getTime()+86400000)){mrg.push({s:new Date(rS),e:new Date(rE)});}else{if(rE>mrg[mrg.length-1].e)mrg[mrg.length-1].e=new Date(rE);}});
-    let sortKey=0;
-    if(!mrg.length){sortKey=99999;}else{const prox=mrg[0];if(today>=prox.s&&today<=prox.e){sortKey=-(Math.ceil((prox.e-today)/86400000));}else{sortKey=Math.ceil((prox.s-today)/86400000);}}
-    let proxLivre=new Date(today);
-    for(const r of mrg){if(proxLivre>=r.s&&proxLivre<=r.e){proxLivre=new Date(r.e.getTime()+86400000);}else if(proxLivre<r.s)break;}
+    todosItens.forEach(r=>{const[sy,sm,sd]=r.inicio.split('-').map(Number);const rS=new Date(sy,sm-1,sd);const[ey,em,ed]=r.fim.split('-').map(Number);const rE=new Date(ey,em-1,ed);if(!mrg.length||rS>new Date(mrg[mrg.length-1].e.getTime()+86400000)){mrg.push({s:new Date(rS),e:new Date(rE)});}else{if(rE>mrg[mrg.length-1].e)mrg[mrg.length-1].e=new Date(rE);}});
+    let sortKey=0;if(!mrg.length){sortKey=99999;}else{const prox=mrg[0];if(today>=prox.s&&today<=prox.e){sortKey=-(Math.ceil((prox.e-today)/86400000));}else{sortKey=Math.ceil((prox.s-today)/86400000);}}
+    let proxLivre=new Date(today);for(const r of mrg){if(proxLivre>=r.s&&proxLivre<=r.e){proxLivre=new Date(r.e.getTime()+86400000);}else if(proxLivre<r.s)break;}
     const diasAteLivre=Math.max(0,Math.ceil((proxLivre-today)/86400000));
     const availColor=diasOcupados>20?'var(--green)':'var(--red)';
     const availText=diasAteLivre===0?'Disponível agora':`Livre em ~${diasAteLivre}d (${diasOcupados}d agendados)`;
-    return{f,fi,cor,servAtivos,compAtivos,sortKey,availColor,availText};
-  }).sort((a,b)=>b.sortKey-a.sortKey);
+    return{f,fi,cor,servAtivos,compAtivos,sortKey,availColor,availText,diasAteLivre};
+  }).sort((a,b)=>b.sortKey-a.sortKey).filter(fd=>!filtroAgendaFuncs.length||filtroAgendaFuncs.includes(fd.f.nome));
 
-  // helper: find day index (clamp to 0 if before range, or last if after)
-  function dayIdx(dateStr){
-    const d=new Date(dateStr+'T12:00:00');
-    d.setHours(0,0,0,0);
-    const idx=days.findIndex(x=>x.getTime()===d.getTime());
-    if(idx>=0)return idx;
-    // if before range, return 0; if after, return last
-    return d<days[0]?0:days.length-1;
-  }
-
-  const funcRows=funcData.map(({f,fi,cor,servAtivos,compAtivos,availColor,availText})=>{
+  const funcRows=funcData.map(({f,cor,servAtivos,compAtivos,availColor,availText,diasAteLivre})=>{
+    const obra=obras.find(o=>o.id);
     const allItems=[
-      ...servAtivos.map(s=>({...s,_tipo:'servico'})),
-      ...compAtivos.map(c=>({obra:'',servico:c.desc,inicio:c.inicio,fim:c.fim,status:'compromisso',_tipo:'comp'}))
-    ];
+      ...servAtivos.map(it=>({...it,_tipo:'servico',obra:obras.find(o=>o.id===it.obra_id)?.nome||''})),
+      ...compAtivos.map(c=>({nome:c.desc,inicio:c.inicio,fim:c.fim,status:'compromisso',_tipo:'comp',obra:''}))
+    ].filter(it=>it.inicio&&it.fim);
     const lanes=[];
     allItems.forEach(item=>{
-      const iS=new Date(item.inicio+'T12:00:00');iS.setHours(0,0,0,0);
-      const iE=new Date(item.fim+'T12:00:00');iE.setHours(0,0,0,0);
-      let lane=0;
-      while(true){if(!lanes[lane]){lanes[lane]=[];break;}
-        const ov=lanes[lane].some(x=>{const xS=new Date(x.inicio+'T12:00:00');xS.setHours(0,0,0,0);const xE=new Date(x.fim+'T12:00:00');xE.setHours(0,0,0,0);return iS<=xE&&iE>=xS;});
-        if(!ov)break;lane++;}
+      const[iSy,iSm,iSd]=item.inicio.split('-').map(Number);const iS=new Date(iSy,iSm-1,iSd);const[iEy,iEm,iEd]=item.fim.split('-').map(Number);const iE=new Date(iEy,iEm-1,iEd);
+      let lane=0;while(true){if(!lanes[lane]){lanes[lane]=[];break;}const ov=lanes[lane].some(x=>{const[xSy,xSm,xSd]=x.inicio.split('-').map(Number);const xS=new Date(xSy,xSm-1,xSd);const[xEy,xEm,xEd]=x.fim.split('-').map(Number);const xE=new Date(xEy,xEm-1,xEd);return iS<=xE&&iE>=xS;});if(!ov)break;lane++;}
       if(!lanes[lane])lanes[lane]=[];lanes[lane].push(item);
     });
     const numLanes=Math.max(1,lanes.length);
     const bgCells=days.map(d=>{const isT=d.getTime()===today.getTime();const isW=d.getDay()===0||d.getDay()===6;return`<div class="g-cell ${isT?'today-col':isW?'weekend-col':''}" style="width:${DW}px"></div>`;}).join('');
-
     const lanesHtml=Array.from({length:numLanes},(_,li)=>{
       const bars=(lanes[li]||[]).map(item=>{
-        const si=dayIdx(item.inicio);
-        const ei=dayIdx(item.fim);
-        const left=si*DW;
-        const width=Math.max(DW,(ei-si+1)*DW);
+        const si=dayIdx(item.inicio);const ei=dayIdx(item.fim);
+        const left=si*DW;const width=Math.max(DW,(ei-si+1)*DW);
         const isComp=item._tipo==='comp';const isAusente=item.status==='ausente';
         let bg=cor;if(isComp)bg='#888888';if(isAusente)bg='repeating-linear-gradient(45deg,#888,#888 4px,#bbb 4px,#bbb 8px)';
-        const label=isComp?'● '+item.servico:isAusente?'⊘ '+item.servico:(item.obra?item.obra+' — '+item.servico:item.servico);
+        const obraNome=item.obra||'';
+        const label=isComp?'● '+item.nome:isAusente?'⊘ '+item.nome:(obraNome?obraNome+' — '+item.nome:item.nome);
         return`<div class="gantt-bar" style="left:${left}px;width:${width}px;background:${bg};opacity:${isAusente?0.7:1}" title="${label}">${label}</div>`;
       }).join('');
       return`<div class="gantt-lane" style="position:relative;height:22px"><div style="display:flex;position:absolute;inset:0;pointer-events:none">${bgCells}</div>${bars}</div>`;
     }).join('');
-
     return`<div class="gantt-func-row">
-      <div class="g-label">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${cor}">${iniciais(f.nome)}</div>
-          <div><div style="font-size:13px;font-weight:500">${f.nome}</div><div style="font-size:11px;color:var(--text2)">${f.funcao}</div></div>
+      <div class="g-label" style="flex-direction:row;align-items:center;gap:6px;min-height:26px;height:auto;">
+        <div style="flex:1;overflow:hidden">
+          <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.nome}</div>
+          ${servAtivos.length?`<div style="font-size:10px;color:var(--text2);white-space:nowrap">até ${fmtDate(servAtivos.reduce((acc,s)=>s.fim>acc?s.fim:acc,''))}</div>`:''}
         </div>
-        <div style="font-size:10px;font-weight:600;margin-top:4px;color:${availColor}">${availText}</div>
+        <div style="font-size:9px;font-weight:600;color:${availColor};white-space:nowrap;flex-shrink:0">${diasAteLivre===0?'Livre':'~'+diasAteLivre+'d'}</div>
       </div>
       <div class="gantt-track">${lanesHtml}</div>
     </div>`;
   }).join('');
 
-  gantt.innerHTML=`<div class="gantt-head"><div class="gantt-month-row"><div class="g-label-head">Funcionário</div><div class="gantt-months-wrap">${monthsHtml}</div></div><div class="gantt-day-row"><div class="g-label-head" style="border-bottom:none"></div><div class="gantt-days-wrap">${daysHtml}</div></div></div>${funcRows}`;
-  // scroll to 1 week before today
+  gantt.innerHTML=`<div class="gantt-head"><div class="gantt-month-row"><div class="g-label-head" style="display:flex;justify-content:space-between;align-items:center;"><span>Funcionário</span><span style="font-size:10px;color:var(--text3);font-weight:400">Data final</span></div><div class="gantt-months-wrap">${monthsHtml}</div></div><div class="gantt-day-row"><div class="g-label-head" style="border-bottom:none"></div><div class="gantt-days-wrap">${daysHtml}</div></div></div>${funcRows}`;
   const todayIdx=days.findIndex(d=>d.getTime()===today.getTime());
   setTimeout(()=>{document.getElementById('gantt-scroll').scrollLeft=Math.max(0,(todayIdx-7)*DW);},50);
 }
@@ -787,7 +1295,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['quadro','servicos','agenda','funcionarios'][i]===tab));
   document.getElementById('content-wrap').style.display='none';
   document.getElementById('view-agenda').style.display='none';
-  if(tab==='agenda'){document.getElementById('view-agenda').style.display='flex';renderAgenda();return;}
+  if(tab==='agenda'){document.getElementById('view-agenda').style.display='flex';renderAgenda();setTimeout(setupAgendaSearch,50);return;}
   document.getElementById('content-wrap').style.display='flex';
   ['quadro','servicos','funcionarios'].forEach(v=>document.getElementById('view-'+v).style.display='none');
   document.getElementById('view-'+tab).style.display='block';
@@ -796,9 +1304,209 @@ function switchTab(tab){
   if(tab==='funcionarios')renderFuncionarios();
 }
 
-['modal-o','modal-s','modal-c','modal-f'].forEach(id=>{
+['modal-o','modal-item','modal-c','modal-f'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)fecharModal(id);});
 });
+
+// ── PDF EXPORT ───────────────────────────────────────────
+function exportarObras(){
+  const w=window.open('','_blank');
+  const rows=STATUS_OBRA.map(st=>{
+    const col=obras.filter(o=>o.status===st.key);
+    if(!col.length)return'';
+    return`<h2 style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#6B6860;margin:20px 0 8px;border-bottom:0.5px solid #DDDAD2;padding-bottom:4px;">${st.label} (${col.length})</h2>
+    <table><thead><tr><th>Obra</th><th>Serviços próprios</th><th>Terceirizados</th><th>Compras pendentes</th><th>Docs pendentes</th></tr></thead><tbody>
+    ${col.map(o=>{
+      const meus=itensObra.filter(it=>it.obra_id===o.id);
+      const proprios=meus.filter(it=>it.tipo==='proprio'&&it.status!=='concluido').length;
+      const terceiros=meus.filter(it=>it.tipo==='terceirizado'&&it.status!=='concluido').length;
+      const comprasPend=meus.filter(it=>it.tipo==='compra'&&it.status==='a-comprar').length;
+      const docsFeitos=meus.filter(it=>it.tipo==='documento'&&it.status==='comprado').length;
+      const docsPend=DOCS_LIST.length-docsFeitos;
+      return`<tr><td style="font-weight:500">${o.nome}</td><td>${proprios}</td><td>${terceiros}</td><td>${comprasPend}</td><td>${docsPend}/${DOCS_LIST.length}</td></tr>`;
+    }).join('')}
+    </tbody></table>`;
+  }).join('');
+
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Obras — Monaro</title>
+  <style>
+    body{font-family:'DM Sans',sans-serif;color:#1A1916;margin:40px;font-size:13px;}
+    h1{font-size:20px;font-weight:600;margin-bottom:4px;}
+    .sub{font-size:12px;color:#6B6860;margin-bottom:24px;}
+    h2{font-size:13px;font-weight:600;}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+    th{text-align:left;font-size:11px;font-weight:600;color:#6B6860;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid #DDDAD2;}
+    td{padding:6px 8px;border-bottom:0.5px solid #EEECE7;font-size:12px;}
+    .logo{font-size:11px;color:#9E9C96;margin-bottom:24px;}
+    .footer{margin-top:32px;font-size:10px;color:#9E9C96;border-top:0.5px solid #DDDAD2;padding-top:8px;}
+  </style></head><body>
+  <div class="logo">Monaro Engenharia</div>
+  <h1>Relatório de Obras</h1>
+  <div class="sub">Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} &nbsp;|&nbsp; ${obras.length} obra${obras.length!==1?'s':''} no total</div>
+  ${rows}
+  <div class="footer">Monaro Engenharia — gestao.engenhariamonaro.com.br</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),500);
+}
+
+function exportarObra(){
+  if(obraAtualIdx===null)return;
+  const obra=obras[obraAtualIdx];
+  const info=obraStatusInfo(obra.status);
+  const meus=itensObra.filter(it=>it.obra_id===obra.id);
+  const proprios=meus.filter(it=>it.tipo==='proprio');
+  const terceirizados=meus.filter(it=>it.tipo==='terceirizado');
+  const compras=meus.filter(it=>it.tipo==='compra');
+  const docsFeitos=meus.filter(it=>it.tipo==='documento'&&it.status==='comprado').map(it=>it.nome);
+
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Relatório — ${obra.nome}</title>
+  <style>
+    body{font-family:'DM Sans',sans-serif;color:#1A1916;margin:40px;font-size:13px;}
+    h1{font-size:20px;font-weight:600;margin-bottom:4px;}
+    .sub{font-size:12px;color:#6B6860;margin-bottom:24px;}
+    h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#6B6860;margin:24px 0 8px;border-bottom:0.5px solid #DDDAD2;padding-bottom:4px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+    th{text-align:left;font-size:11px;font-weight:600;color:#6B6860;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid #DDDAD2;}
+    td{padding:6px 8px;border-bottom:0.5px solid #EEECE7;font-size:12px;}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:500;border:0.5px solid #ccc;}
+    .logo{font-size:11px;color:#9E9C96;margin-bottom:24px;}
+    .check{color:#3B6D11;}
+    .pending{color:#A32D2D;}
+    .footer{margin-top:32px;font-size:10px;color:#9E9C96;border-top:0.5px solid #DDDAD2;padding-top:8px;}
+  </style></head><body>
+  <div class="logo">Monaro Engenharia</div>
+  <h1>${obra.nome}</h1>
+  <div class="sub">Status: ${info.label} &nbsp;|&nbsp; Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+
+  <h2>Serviços próprios (${proprios.length})</h2>
+  ${proprios.length?`<table><thead><tr><th>Serviço</th><th>Funcionários</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead><tbody>
+  ${proprios.map(it=>`<tr><td>${it.nome}</td><td>${(it.funcs||[]).join(', ')||'—'}</td><td>${fmtDate(it.inicio)}</td><td>${fmtDate(it.fim)}</td><td>${statusLabel(it.status)}</td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:#9E9C96;font-size:12px">Nenhum serviço próprio cadastrado.</p>'}
+
+  <h2>Serviços terceirizados (${terceirizados.length})</h2>
+  ${terceirizados.length?`<table><thead><tr><th>Serviço</th><th>Empresa/Pessoa</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead><tbody>
+  ${terceirizados.map(it=>`<tr><td>${it.nome}</td><td>${it.terceiro||'—'}</td><td>${fmtDate(it.inicio)}</td><td>${fmtDate(it.fim)}</td><td>${statusLabel(it.status)}</td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:#9E9C96;font-size:12px">Nenhum serviço terceirizado cadastrado.</p>'}
+
+  <h2>Compras (${compras.length})</h2>
+  ${compras.length?`<table><thead><tr><th>Material</th><th>Status</th></tr></thead><tbody>
+  ${compras.map(it=>`<tr><td>${it.nome}</td><td>${it.status==='comprado'?'Realizado':'Pendente'}</td></tr>`).join('')}
+  </tbody></table>`:'<p style="color:#9E9C96;font-size:12px">Nenhuma compra cadastrada.</p>'}
+
+  <h2>Documentos (${docsFeitos.length}/${DOCS_LIST.length} concluídos)</h2>
+  <table><thead><tr><th>Documento</th><th>Status</th></tr></thead><tbody>
+  ${DOCS_LIST.map(doc=>`<tr><td>${doc}</td><td class="${docsFeitos.includes(doc)?'check':'pending'}">${docsFeitos.includes(doc)?'✓ Feito':'✗ Pendente'}</td></tr>`).join('')}
+  </tbody></table>
+
+  <div class="footer">Monaro Engenharia — gestao.engenhariamonaro.com.br</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),500);
+}
+
+function exportarPendencias(){
+  const q=document.getElementById('search').value;
+  const ft=document.getElementById('filter-tipo').value;
+  const fs=document.getElementById('filter-status').value;
+  const obrasAtivasIds=new Set(obras.filter(o=>['aprovado','executando','manutencao','finalizado'].includes(o.status)).map(o=>o.id));
+  const lista=itensObra.filter(it=>{
+    if(!obrasAtivasIds.has(it.obra_id))return false;
+    const obra=obras.find(o=>o.id===it.obra_id);
+    const obraNome=obra?obra.nome:'';
+    const matchQ=(obraNome+it.nome+(it.funcs||[]).join(' ')+(it.terceiro||'')).toLowerCase().includes(q.toLowerCase());
+    const matchT=!ft||it.tipo===ft;
+    let matchS=!fs;
+    if(fs==='sem-agenda')matchS=it.status==='sem-agenda'&&it.tipo!=='documento';
+    else if(fs==='agendado')matchS=it.status==='agendado';
+    else if(fs==='execucao')matchS=it.status==='execucao';
+    else if(fs==='concluido')matchS=it.status==='concluido';
+    else if(fs==='a-comprar')matchS=it.tipo==='compra'&&it.status==='a-comprar';
+    else if(fs==='comprado')matchS=it.tipo==='compra'&&it.status==='comprado';
+    else if(fs==='nao-feito')matchS=it.tipo==='documento'&&it.status!=='comprado';
+    else if(fs==='feito')matchS=it.tipo==='documento'&&it.status==='comprado';
+    return matchQ&&matchT&&matchS;
+  }).map(it=>{const obra=obras.find(o=>o.id===it.obra_id);return{...it,_obraNome:obra?obra.nome:'—'};});
+
+  const tipoLabel={'proprio':'Próprio','terceirizado':'Terceirizado','compra':'Compra','documento':'Documento'};
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Pendências — Monaro</title>
+  <style>
+    body{font-family:'DM Sans',sans-serif;color:#1A1916;margin:40px;font-size:13px;}
+    h1{font-size:20px;font-weight:600;margin-bottom:4px;}
+    .sub{font-size:12px;color:#6B6860;margin-bottom:24px;}
+    table{width:100%;border-collapse:collapse;}
+    th{text-align:left;font-size:11px;font-weight:600;color:#6B6860;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid #DDDAD2;}
+    td{padding:6px 8px;border-bottom:0.5px solid #EEECE7;font-size:12px;}
+    .logo{font-size:11px;color:#9E9C96;margin-bottom:24px;}
+    .footer{margin-top:32px;font-size:10px;color:#9E9C96;border-top:0.5px solid #DDDAD2;padding-top:8px;}
+  </style></head><body>
+  <div class="logo">Monaro Engenharia</div>
+  <h1>Relatório de Pendências</h1>
+  <div class="sub">Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} &nbsp;|&nbsp; ${lista.length} item${lista.length!==1?'s':''}</div>
+  <table><thead><tr><th>Obra</th><th>Item</th><th>Tipo</th><th>Responsável</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead><tbody>
+  ${lista.map(it=>{
+    const resp=it.tipo==='proprio'?(it.funcs||[]).join(', ')||'—':it.tipo==='terceirizado'?it.terceiro||'—':'—';
+    const st=it.tipo==='documento'?(it.status==='comprado'?'Feito':'Pendente'):it.tipo==='compra'?(it.status==='comprado'?'Realizado':'Pendente'):statusLabel(it.status);
+    return`<tr><td>${it._obraNome}</td><td>${it.nome}</td><td>${tipoLabel[it.tipo]||it.tipo}</td><td>${resp}</td><td>${fmtDate(it.inicio)}</td><td>${fmtDate(it.fim)}</td><td>${st}</td></tr>`;
+  }).join('')}
+  </tbody></table>
+  <div class="footer">Monaro Engenharia — gestao.engenhariamonaro.com.br</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),500);
+}
+
+function exportarAgenda(){
+  const funcs=filtroAgendaFuncs.length?funcionarios.filter(f=>filtroAgendaFuncs.includes(f.nome)):funcionarios;
+  const today=new Date();today.setHours(0,0,0,0);
+  const agendaStatusFiltro=document.getElementById('filter-agenda-status')?.value||'';
+  const linhas=funcs.map(f=>{
+    const servs=itensObra.filter(it=>it.tipo==='proprio'&&(it.funcs||[]).includes(f.nome)&&it.inicio&&it.fim&&(!agendaStatusFiltro||it.status===agendaStatusFiltro)&&it.status!=='concluido');
+    const comps=compromissos.filter(c=>c.func===f.nome&&c.inicio&&c.fim);
+    if(!servs.length&&!comps.length)return'';
+    const rows=[
+      ...servs.map(it=>{const obra=obras.find(o=>o.id===it.obra_id);return`<tr><td>${f.nome}</td><td>${obra?obra.nome:'—'}</td><td>${it.nome}</td><td>${fmtDate(it.inicio)}</td><td>${fmtDate(it.fim)}</td><td>${statusLabel(it.status)}</td></tr>`;}),
+      ...comps.map(c=>`<tr><td>${f.nome}</td><td>—</td><td>● ${c.desc}</td><td>${fmtDate(c.inicio)}</td><td>${fmtDate(c.fim)}</td><td>Compromisso</td></tr>`)
+    ];
+    return rows.join('');
+  }).join('');
+
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Agenda — Monaro</title>
+  <style>
+    body{font-family:'DM Sans',sans-serif;color:#1A1916;margin:40px;font-size:13px;}
+    h1{font-size:20px;font-weight:600;margin-bottom:4px;}
+    .sub{font-size:12px;color:#6B6860;margin-bottom:24px;}
+    table{width:100%;border-collapse:collapse;}
+    th{text-align:left;font-size:11px;font-weight:600;color:#6B6860;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid #DDDAD2;}
+    td{padding:6px 8px;border-bottom:0.5px solid #EEECE7;font-size:12px;}
+    .logo{font-size:11px;color:#9E9C96;margin-bottom:24px;}
+    .footer{margin-top:32px;font-size:10px;color:#9E9C96;border-top:0.5px solid #DDDAD2;padding-top:8px;}
+  </style></head><body>
+  <div class="logo">Monaro Engenharia</div>
+  <h1>Agenda de Funcionários</h1>
+  <div class="sub">Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+  <table><thead><tr><th>Funcionário</th><th>Obra</th><th>Serviço</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead><tbody>
+  ${linhas||'<tr><td colspan="6" style="color:#9E9C96;text-align:center;padding:20px">Nenhum serviço encontrado.</td></tr>'}
+  </tbody></table>
+  <div class="footer">Monaro Engenharia — gestao.engenhariamonaro.com.br</div>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),500);
+}
+
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const btn=sb.querySelector('.sidebar-toggle');
+  sb.classList.toggle('collapsed');
+  btn.textContent=sb.classList.contains('collapsed')?'▶':'◀';
+}
 
 iniciar();
 </script>
