@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monaro — Gestão</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
 :root{
@@ -44,7 +45,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;color:#888;font-size:13px;font-weight:500;border:none;background:transparent;width:100%;text-align:left;transition:all 0.15s;}
 .nav-item:hover{background:rgba(255,255,255,0.07);color:#ccc;}
 .nav-item.active{background:rgba(255,255,255,0.12);color:#fff;}
-.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.nav-icon{width:20px;height:20px;text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.nav-icon svg{width:16px;height:16px;stroke:currentColor;}
 .sidebar-footer{padding:0.75rem;border-top:0.5px solid rgba(255,255,255,0.08);}
 .sidebar-sync{font-size:11px;color:#555;display:flex;align-items:center;gap:5px;margin-bottom:6px;}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:#555;}
@@ -169,29 +171,29 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
       <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher">◀</button>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="navTo('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></button>
+      <button class="nav-item active" onclick="navTo('dashboard')"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span class="nav-label">Dashboard</span></button>
       <div class="nav-section">Cadastros</div>
-      <button class="nav-item" onclick="navTo('clientes')"><span class="nav-icon">🏢</span><span class="nav-label">Clientes</span></button>
-      <button class="nav-item" onclick="navTo('fornecedores')"><span class="nav-icon">🤝</span><span class="nav-label">Fornecedores</span></button>
-      <button class="nav-item" onclick="navTo('funcionarios')"><span class="nav-icon">👷</span><span class="nav-label">Funcionários</span></button>
+      <button class="nav-item" onclick="navTo('clientes')"><span class="nav-icon"><i data-lucide="building-2"></i></span><span class="nav-label">Clientes</span></button>
+      <button class="nav-item" onclick="navTo('fornecedores')"><span class="nav-icon"><i data-lucide="handshake"></i></span><span class="nav-label">Fornecedores</span></button>
+      <button class="nav-item" onclick="navTo('funcionarios')"><span class="nav-icon"><i data-lucide="hard-hat"></i></span><span class="nav-label">Funcionários</span></button>
       <div class="nav-section">Operacional</div>
-      <button class="nav-item" onclick="navTo('obras')"><span class="nav-icon">🏗</span><span class="nav-label">Obras</span></button>
-      <button class="nav-item" onclick="navTo('financeiro')"><span class="nav-icon">💰</span><span class="nav-label">Financeiro</span></button>
-      <button class="nav-item" onclick="navTo('estoque')"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></button>
-      <button class="nav-item" onclick="navTo('compromissos')"><span class="nav-icon">📌</span><span class="nav-label">Compromissos</span></button>
+      <button class="nav-item" onclick="navTo('obras')"><span class="nav-icon"><i data-lucide="construction"></i></span><span class="nav-label">Obras</span></button>
+      <button class="nav-item" onclick="navTo('financeiro')"><span class="nav-icon"><i data-lucide="landmark"></i></span><span class="nav-label">Financeiro</span></button>
+      <button class="nav-item" onclick="navTo('estoque')"><span class="nav-icon"><i data-lucide="package"></i></span><span class="nav-label">Estoque</span></button>
+      <button class="nav-item" onclick="navTo('compromissos')"><span class="nav-icon"><i data-lucide="pin"></i></span><span class="nav-label">Compromissos</span></button>
       <div class="nav-section">Pessoas</div>
-      <button class="nav-item" onclick="navTo('dias-trabalhados')"><span class="nav-icon">📅</span><span class="nav-label">Dias trabalhados</span></button>
-      <button class="nav-item" onclick="navTo('rh')"><span class="nav-icon">📋</span><span class="nav-label">Gestão RH</span></button>
-      <button class="nav-item" onclick="navTo('ferramentas')"><span class="nav-icon">🔧</span><span class="nav-label">Ferramentas</span></button>
+      <button class="nav-item" onclick="navTo('dias-trabalhados')"><span class="nav-icon"><i data-lucide="calendar-check"></i></span><span class="nav-label">Dias trabalhados</span></button>
+      <button class="nav-item" onclick="navTo('rh')"><span class="nav-icon"><i data-lucide="folder-open"></i></span><span class="nav-label">Gestão RH</span></button>
+      <button class="nav-item" onclick="navTo('ferramentas')"><span class="nav-icon"><i data-lucide="wrench"></i></span><span class="nav-label">Ferramentas</span></button>
       <div class="nav-section">Visão</div>
-      <button class="nav-item" onclick="navTo('agenda-func')"><span class="nav-icon">👤</span><span class="nav-label">Agenda funcionários</span></button>
-      <button class="nav-item" onclick="navTo('agenda-obras')"><span class="nav-icon">🗓</span><span class="nav-label">Agenda obras</span></button>
-      <button class="nav-item" onclick="navTo('pendencias')"><span class="nav-icon">⚠</span><span class="nav-label">Pendências</span></button>
-      <button class="nav-item" onclick="navTo('relatorios')"><span class="nav-icon">📈</span><span class="nav-label">Relatórios</span></button>
+      <button class="nav-item" onclick="navTo('agenda-func')"><span class="nav-icon"><i data-lucide="user-check"></i></span><span class="nav-label">Agenda funcionários</span></button>
+      <button class="nav-item" onclick="navTo('agenda-obras')"><span class="nav-icon"><i data-lucide="gantt-chart"></i></span><span class="nav-label">Agenda obras</span></button>
+      <button class="nav-item" onclick="navTo('pendencias')"><span class="nav-icon"><i data-lucide="triangle-alert"></i></span><span class="nav-label">Pendências</span></button>
+      <button class="nav-item" onclick="navTo('relatorios')"><span class="nav-icon"><i data-lucide="bar-chart-2"></i></span><span class="nav-label">Relatórios</span></button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-sync"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-text">Sincronizado</span></div>
-      <button class="btn-sair" onclick="fazerLogout()"><span>🚪</span><span>Sair</span></button>
+      <button class="btn-sair" onclick="fazerLogout()"><span><i data-lucide="log-out" style="width:14px;height:14px"></i></span><span>Sair</span></button>
     </div>
   </div>
 
@@ -204,16 +206,27 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
       <div class="page-body">
         <!-- Cards clicáveis -->
         <div class="cards-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:1.5rem" id="dash-cards"></div>
+        <!-- Obras em aberto -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i data-lucide="construction" style="width:14px;height:14px"></i> Obras em aberto
+          </div>
+          <div id="dash-obras-abertas"><p style="color:var(--text3);font-size:13px">Nenhuma obra em aberto.</p></div>
+        </div>
         <!-- Linha inferior -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <!-- Aniversariantes -->
           <div class="card">
-            <div class="card-label" style="margin-bottom:12px">🎂 Aniversariantes hoje</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+              <i data-lucide="cake" style="width:14px;height:14px"></i> Aniversariantes hoje
+            </div>
             <div id="dashboard-aniversariantes"><p style="color:var(--text3);font-size:13px">Nenhum aniversariante hoje.</p></div>
           </div>
           <!-- Compromissos -->
           <div class="card">
-            <div class="card-label" style="margin-bottom:12px">📌 Compromissos — hoje e amanhã</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+              <i data-lucide="pin" style="width:14px;height:14px"></i> Compromissos — hoje e amanhã
+            </div>
             <div id="dash-compromissos"><p style="color:var(--text3);font-size:13px">Nenhum compromisso.</p></div>
           </div>
         </div>
@@ -629,6 +642,7 @@ function navTo(id){
   if(btn)btn.classList.add('active');
   const page=document.getElementById('page-'+id);
   if(page)page.classList.add('active');
+  if(typeof lucide !== 'undefined')lucide.createIcons();
 }
 function toggleSidebar(){
   const sb=document.getElementById('sidebar');
@@ -1093,20 +1107,15 @@ function renderDashboard(){
 
   // cards clicáveis
   const cards=[
-    {icon:'🏗',label:'Obras em aberto',value:obrasAbertas,color:'var(--orange)',onclick:"navToFiltro('obras','aberto')"},
-    {icon:'⚠',label:'Pendências',value:pendencias,color:'var(--red)',onclick:"navToFiltro('pendencias','')"},
-    {icon:'📌',label:'Compromissos hoje/amanhã',value:totalComp,color:'var(--blue)',onclick:"navToFiltro('compromissos','hoje')"},
-    {icon:'👷',label:'Funcionários ativos',value:funcionarios.filter(f=>(f.ativo||'ativo')==='ativo').length,color:'var(--green)',onclick:"navTo('funcionarios')"},
-    {icon:'🏢',label:'Clientes',value:clientes.length,color:'var(--purple)',onclick:"navTo('clientes')"},
-    {icon:'🤝',label:'Fornecedores',value:fornecedores.length,color:'var(--text2)',onclick:"navTo('fornecedores')"},
+    {icon:'triangle-alert',label:'Pendências em aberto',value:pendencias,color:'var(--red)',onclick:"navToFiltro('pendencias','')"},
   ];
-
   document.getElementById('dash-cards').innerHTML=cards.map(c=>`
-    <div class="card" onclick="${c.onclick}" style="cursor:pointer;transition:box-shadow 0.15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
-      <div style="font-size:20px;margin-bottom:8px">${c.icon}</div>
+    <div class="card" onclick="${c.onclick}" style="cursor:pointer;max-width:200px;transition:box-shadow 0.15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
+      <div style="margin-bottom:8px;color:${c.color}"><i data-lucide="${c.icon}" style="width:20px;height:20px"></i></div>
       <div class="card-label">${c.label}</div>
       <div class="card-value" style="color:${c.value>0?c.color:'var(--text)'}">${c.value}</div>
     </div>`).join('');
+  if(typeof lucide !== 'undefined')lucide.createIcons();
 
   // compromissos no painel
   const el=document.getElementById('dash-compromissos');
@@ -1126,6 +1135,14 @@ function renderDashboard(){
     el.innerHTML=renderComp(compHoje,'Hoje')+renderComp(compAmanha,'Amanhã');
   }
 
+  // Obras em aberto (placeholder - will be populated when obras module is built)
+  const elObras=document.getElementById('dash-obras-abertas');
+  if(elObras){
+    // This will be populated when obras module is ready
+    // For now show placeholder
+    elObras.innerHTML='<p style="color:var(--text3);font-size:13px">Módulo obras em desenvolvimento.</p>';
+  }
+  if(typeof lucide !== 'undefined')lucide.createIcons();
   renderAniversariantes();
 }
 
@@ -1322,6 +1339,7 @@ function renderAniversariantes(){
 
 iniciar();
 setupMascaras();
+if(typeof lucide !== 'undefined'){lucide.createIcons();}
 </script>
 </body>
 </html>
