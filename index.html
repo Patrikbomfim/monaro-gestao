@@ -1373,6 +1373,7 @@ function renderAbaOrcamento(o){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm btn-primary" onclick="adicionarLinhaOrc('${o.id}')">+ Linha</button>
+        <button class="btn btn-sm" onclick="limparPlanilha('${o.id}')" style="color:var(--red);border-color:var(--red)">Limpar planilha</button>
         <button class="btn btn-sm" onclick="exportarOrcamentoPDF('${o.id}')">⬇ PDF</button>
         <div style="width:1px;background:var(--border);margin:0 4px"></div>
         <span style="font-size:11px;color:var(--text2);align-self:center">Templates:</span>
@@ -1380,14 +1381,19 @@ function renderAbaOrcamento(o){
         <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue);font-size:11px" onclick="carregarTemplate('${o.id}','MANUTENÇÃO DE PASTILHAS')">Manutenção Pastilhas</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)">
-        <span>BDI padrão:</span>
+        <span style="color:var(--text2)">Tempo exec.:</span>
         <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:4px;padding:2px 6px">
-          <input type="text" inputmode="decimal" value="${Math.round(bdi*100)}" onblur="atualizarBdiObra('${o.id}',this.value)" style="width:36px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" />
+          <input type="text" inputmode="decimal" value="${o.tempo_execucao||''}" onblur="atualizarTempoObra('${o.id}',this.value)" style="width:32px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" placeholder="0" />
+          <span style="font-size:11px;color:var(--text2)">meses</span>
+        </div>
+        <span>BDI:</span>
+        <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:4px;padding:2px 6px">
+          <input type="text" inputmode="decimal" value="${Math.round(bdi*100)}" onblur="atualizarBdiObra('${o.id}',this.value)" style="width:32px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" />
           <span>%</span>
         </div>
         <span>Alíquota NF:</span>
         <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:4px;padding:2px 6px">
-          <input type="text" inputmode="decimal" value="${Math.round(aliq*100)}" onblur="atualizarAliqObra('${o.id}',this.value)" style="width:36px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" />
+          <input type="text" inputmode="decimal" value="${Math.round(aliq*100)}" onblur="atualizarAliqObra('${o.id}',this.value)" style="width:32px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" />
           <span>%</span>
         </div>
       </div>
@@ -1443,9 +1449,13 @@ function renderAbaOrcamento(o){
 }
 
 async function adicionarLinhaOrc(obraId){
-  const n=orcamentoItens.filter(it=>it.obra_id===obraId).length;
-  await sb.from('orcamento_itens').insert({obra_id:obraId,item:n+1,categoria:CATS_ORC[0],servico:'',unidade:'',quantidade:0,valor_unitario:0,aliquota_nf:null,bdi:null});
-  await recarregarObras();
+  setSyncStatus('loading');
+  try{
+    const n=orcamentoItens.filter(it=>it.obra_id===obraId).length;
+    const{error}=await sb.from('orcamento_itens').insert({obra_id:obraId,item:n+1,categoria:CATS_ORC[0],servico:'',unidade:'',quantidade:0,valor_unitario:0,aliquota_nf:null,bdi:null});
+    if(error)throw error;
+    setSyncStatus('ok');await recarregarObras();
+  }catch(e){setSyncStatus('err');console.error(e);alert('Erro ao adicionar linha: '+(e.message||e));}
 }
 async function atualizarItemOrc(id,campo,valor){await sb.from('orcamento_itens').update({[campo]:valor}).eq('id',id);await recarregarObras();}
 async function atualizarItemOrcNum(id,campo,valor){await sb.from('orcamento_itens').update({[campo]:parseFloat(valor)||0}).eq('id',id);await recarregarObras();}
@@ -1506,10 +1516,18 @@ function renderAbaCronograma(o){
   const totCols=cols.map((_,ci)=>linhas.reduce((a,l)=>a+(l._vals[ci]||0),0));
   document.getElementById('obra-content-cronograma').innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <span style="font-size:12px;color:var(--text2);font-weight:500">Período:</span>
-      <input type="month" id="cron-inicio-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)" />
-      <span style="font-size:12px;color:var(--text2)">até</span>
-      <input type="month" id="cron-fim-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)" />
+      <span style="font-size:12px;color:var(--text2);font-weight:500">De:</span>
+      <select id="cron-mes-ini-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
+        ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+      </select>
+      <input type="text" inputmode="numeric" id="cron-ano-ini-${o.id}" placeholder="${new Date().getFullYear()}" value="${new Date().getFullYear()}"
+        style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);width:64px" />
+      <span style="font-size:12px;color:var(--text2)">até:</span>
+      <select id="cron-mes-fim-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
+        ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+      </select>
+      <input type="text" inputmode="numeric" id="cron-ano-fim-${o.id}" placeholder="${new Date().getFullYear()}" value="${new Date().getFullYear()}"
+        style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);width:64px" />
       <button class="btn btn-sm btn-primary" onclick="gerarColunasCron('${o.id}')">Gerar colunas</button>
       <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${o.id}')" style="color:var(--red)">Limpar tudo</button>
     </div>
@@ -1575,11 +1593,14 @@ async function adicionarColunaCron(obraId){
   await recarregarObras(true);
 }
 async function gerarColunasCron(obraId){
-  const inicioEl=document.getElementById('cron-inicio-'+obraId);
-  const fimEl=document.getElementById('cron-fim-'+obraId);
-  if(!inicioEl||!fimEl||!inicioEl.value||!fimEl.value){alert('Selecione o mês/ano de início e fim.');return;}
-  const[iy,im]=inicioEl.value.split('-').map(Number);
-  const[fy,fm]=fimEl.value.split('-').map(Number);
+  const mesIniEl=document.getElementById('cron-mes-ini-'+obraId);
+  const anoIniEl=document.getElementById('cron-ano-ini-'+obraId);
+  const mesFimEl=document.getElementById('cron-mes-fim-'+obraId);
+  const anoFimEl=document.getElementById('cron-ano-fim-'+obraId);
+  if(!mesIniEl||!anoIniEl||!mesFimEl||!anoFimEl){alert('Campos não encontrados.');return;}
+  const im=parseInt(mesIniEl.value),iy=parseInt(anoIniEl.value);
+  const fm=parseInt(mesFimEl.value),fy=parseInt(anoFimEl.value);
+  if(!iy||!fy||isNaN(iy)||isNaN(fy)){alert('Preencha os anos.');return;}
   if(iy>fy||(iy===fy&&im>fm)){alert('Mês de início deve ser anterior ao fim.');return;}
   const existentes=cronColunas.filter(c=>c.obra_id===obraId).length;
   setSyncStatus('loading');
@@ -2120,11 +2141,11 @@ if(typeof lucide !== 'undefined'){lucide.createIcons();}
             <option value="finalizado">Finalizado</option><option value="manutencao">Manutenção</option>
           </select>
         </div>
-        <div class="form-row"><label class="form-label">Tempo de execução (meses)</label><input id="mob-tempo" type="number" placeholder="Ex: 4" /></div>
         <div class="form-row"><label class="form-label">Data início</label><input id="mob-inicio" type="date" /></div>
-        <div class="form-row"><label class="form-label">BDI padrão (%)</label><input id="mob-bdi" type="number" placeholder="60" /></div>
-        <div class="form-row"><label class="form-label">Alíquota NF padrão (%)</label><input id="mob-aliquota" type="number" placeholder="12" /></div>
         <div class="form-row full"><label class="form-label">Observação</label><textarea id="mob-obs" placeholder="Informações adicionais..."></textarea></div>
+        <input type="hidden" id="mob-bdi" value="60" />
+        <input type="hidden" id="mob-tempo" value="" />
+        <input type="hidden" id="mob-aliquota" value="12" />
       </div>
     </div>
     <div class="modal-footer">
