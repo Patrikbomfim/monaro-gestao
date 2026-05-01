@@ -413,7 +413,6 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
         </select>
       </div>
     </div>
-    <div class="form-actions">
     </div><!-- /modal-body -->
     <div class="modal-footer">
       <button class="btn btn-danger" id="mc-excluir" style="display:none;margin-right:auto" onclick="excluirCliente()">Excluir</button>
@@ -451,7 +450,6 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
       <div class="form-row"><label class="form-label">Favorecido Pix</label><input id="mf-favorecido" placeholder="Nome completo" /></div>
       <div class="form-row full"><label class="form-label">Observações</label><textarea id="mf-obs" placeholder="Informações adicionais..."></textarea></div>
     </div>
-    <div class="form-actions">
     </div><!-- /modal-body -->
     <div class="modal-footer">
       <button class="btn btn-danger" id="mf-excluir" style="display:none;margin-right:auto" onclick="excluirFornecedor()">Excluir</button>
@@ -520,7 +518,6 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
         </select>
       </div>
     </div>
-    <div class="form-actions">
     </div><!-- /modal-body -->
     <div class="modal-footer">
       <button class="btn btn-danger" id="mfn-excluir" style="display:none;margin-right:auto" onclick="excluirFuncionario()">Excluir</button>
@@ -848,7 +845,6 @@ function abrirFornecedor(id){
   document.getElementById('mf-titulo').textContent=id?'Editar fornecedor':'Novo fornecedor';
   document.getElementById('mf-excluir').style.display=id?'inline-flex':'none';
   document.getElementById('mf-nome').value=f.nome||'';
-  document.getElementById('mf-nascimento').value=f.data_nascimento||'';
   document.getElementById('mf-cat').value=f.categoria||'';
   document.getElementById('mf-cpfcnpj').value=f.cpf_cnpj||'';
   document.getElementById('mf-telefone').value=f.telefone||'';
