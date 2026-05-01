@@ -1291,7 +1291,7 @@ function switchObraAba(aba){
   if(aba==='cadastro')renderAbaCadastro(o);
   else if(aba==='orcamento')renderAbaOrcamento(o);
   else if(aba==='resumo')renderAbaResumo(o);
-  else if(aba==='cronograma')renderAbaCronograma(o);
+  else if(aba==='cronograma'){renderAbaCronograma(o);setTimeout(()=>renderCronControls(o.id),100);}
   else if(aba==='proprios')renderAbaServicos(o,'proprio');
   else if(aba==='terceirizados')renderAbaServicos(o,'terceirizado');
   else if(aba==='compras')renderAbaCompras(o);
@@ -1647,14 +1647,17 @@ async function gerarColunasCron(obraId){
   try{
     let ordem=existentes;
     let y=iy,m=im;
-    const existingMeses=cronColunas.filter(c=>c.obra_id===obraId).map(c=>c.mes+'-'+c.ano);
-    while(y<fy||(y===fy&&m<=fm)){
-      const key=m+'-'+y;
-      if(!existingMeses.includes(key)){
-        await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:m,ano:y,ordem:++ordem});
-      }
-      m++;if(m>12){m=1;y++;}
+    // Fetch fresh to avoid duplicates
+  const{data:freshCols}=await sb.from('cronograma_colunas').select('*').eq('obra_id',obraId);
+  const existingMeses=(freshCols||[]).map(c=>c.mes+'-'+c.ano);
+  while(y<fy||(y===fy&&m<=fm)){
+    const key=m+'-'+y;
+    if(!existingMeses.includes(key)){
+      existingMeses.push(key); // prevent duplicates within same batch
+      await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:m,ano:y,ordem:++ordem});
     }
+    m++;if(m>12){m=1;y++;}
+  }
     setSyncStatus('ok');await recarregarObras(true);
   }catch(e){setSyncStatus('err');alert('Erro ao gerar colunas.');}
 }
@@ -2131,6 +2134,15 @@ function renderAniversariantes(){
 // ── SINCRONIZAÇÃO ORÇAMENTO → PENDÊNCIAS ─────────────────
 const STATUS_APROVADOS=['aprovado','executando','manutencao','finalizado'];
 
+async function sincronizarManual(){
+  if(!obraAtualId)return;
+  setSyncStatus('loading');
+  await sincronizarPendencias(obraAtualId);
+  setSyncStatus('ok');
+  renderObraScreen();
+  alert('Sincronização concluída!');
+}
+
 async function sincronizarPendencias(obraId){
   // Fetch fresh data from DB to avoid stale cache issues
   let obraData,itensOrc,itensPend;
@@ -2239,6 +2251,7 @@ if(typeof lucide !== 'undefined'){lucide.createIcons();}
     <div id="obra-screen-badge"></div>
     <div style="flex:1"></div>
     <button onclick="abrirModalObra(obraAtualId)" style="font-family:inherit;font-size:12px;padding:5px 12px;border-radius:var(--radius);border:0.5px solid rgba(255,255,255,0.2);background:transparent;color:#ccc;cursor:pointer">Editar obra</button>
+    <button onclick="sincronizarManual()" style="font-family:inherit;font-size:12px;padding:5px 12px;border-radius:var(--radius);border:0.5px solid rgba(255,255,255,0.2);background:transparent;color:#aaa;cursor:pointer" title="Sincronizar pendências com o orçamento">↺ Sincronizar</button>
   </div>
   <div style="display:flex;gap:2px;padding:0 1.5rem;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0;overflow-x:auto">
     <button class="obra-tab active" data-aba="cadastro" onclick="switchObraAba('cadastro')">Cadastro</button>
