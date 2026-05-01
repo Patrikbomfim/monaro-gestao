@@ -2133,14 +2133,13 @@ const STATUS_APROVADOS=['aprovado','executando','manutencao','finalizado'];
 
 async function sincronizarPendencias(obraId){
   // Fetch fresh data from DB to avoid stale cache issues
-  const{data:obraData}=await sb.from('obras').select('status').eq('id',obraId).single().catch(()=>({data:null}));
+  let obraData,itensOrc,itensPend;
+  try{const r=await sb.from('obras').select('status').eq('id',obraId).single();obraData=r.data;}catch(e){obraData=null;}
   if(!obraData||!STATUS_APROVADOS.includes(obraData.status)){
-    console.log('Sync skip: obra not approved, status=',obraData?.status);
-    return;
+    console.log('Sync skip: status=',obraData?.status);return;
   }
-
-  const{data:itensOrc}=await sb.from('orcamento_itens').select('*').eq('obra_id',obraId).catch(()=>({data:[]}));
-  const{data:itensPend}=await sb.from('itens_obra').select('*').eq('obra_id',obraId).catch(()=>({data:[]}));
+  try{const r=await sb.from('orcamento_itens').select('*').eq('obra_id',obraId);itensOrc=r.data||[];}catch(e){itensOrc=[];}
+  try{const r=await sb.from('itens_obra').select('*').eq('obra_id',obraId);itensPend=r.data||[];}catch(e){itensPend=[];}
   
   if(!itensOrc||!itensOrc.length){console.log('Sync: no orc items');return;}
   console.log('Sync: checking',itensOrc.length,'orc items');
@@ -2163,8 +2162,10 @@ async function sincronizarPendencias(obraId){
         inicio:null,
         fim:null,
       };
-      const{error}=await sb.from('itens_obra').insert(dados);
-      if(error)console.error('sync insert err',error);
+      try{
+        const{error}=await sb.from('itens_obra').insert(dados);
+        if(error)console.error('sync insert err',error);
+      }catch(e){console.error('sync insert exception',e);}
     } else {
       console.log('Sync: already exists for',orc.servico);
     }
