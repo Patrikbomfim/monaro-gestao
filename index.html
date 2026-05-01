@@ -585,8 +585,9 @@ const SUPABASE_URL='https://qxhvnpippvlobkzjyhto.supabase.co';
 const SUPABASE_KEY='sb_publishable_A9jCcn7_6dJ-sqp1Pum4rw_vsBwVCr7';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let clientes=[], fornecedores=[], funcionarios=[], compromissos=[];
-let editClienteId=null, editFornId=null, editFuncId=null, editCompId=null;
+let clientes=[], fornecedores=[], funcionarios=[], compromissos=[], obras=[], orcamentoItens=[], itensObra=[], cronColunas=[], cronValores=[];
+let editClienteId=null, editFornId=null, editFuncId=null, editCompId=null, editObraId=null, editItemObraId=null;
+let obraAtualId=null, obraAbaAtual='cadastro';
 
 // ── HELPERS ──────────────────────────────────────────────
 function setSyncStatus(st){
@@ -1354,10 +1355,16 @@ function renderAbaOrcamento(o){
         <th style="padding:7px 6px;border:0.5px solid var(--border2);width:30px;background:var(--bg)"></th>
       </tr></thead>
       <tbody>
-      ${linhas.map((it,i)=>{
+      ${linhas.reduce((acc,it,i)=>{
         const prevCat=i>0?linhas[i-1].categoria:'';
-        const borderTop=it.categoria&&it.categoria!==prevCat&&i>0?'border-top:2px solid var(--border2);':'';
-        return`<tr style="${borderTop}">
+        const catChanged=it.categoria&&it.categoria!==prevCat&&i>0;
+        if(catChanged){
+          acc+=`<tr><td colspan="11" style="padding:0;background:var(--border2);height:2px;border:none"></td></tr>
+          <tr><td colspan="11" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">${it.categoria}</td></tr>`;
+        } else if(i===0){
+          acc+=`<tr><td colspan="11" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">${it.categoria||''}</td></tr>`;
+        }
+        acc+=`<tr>
         <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:center;color:var(--text2)">${it.item||i+1}</td>
         <td style="padding:3px 4px;border:0.5px solid var(--border2)">
           <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px">
@@ -1367,7 +1374,13 @@ function renderAbaOrcamento(o){
         <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
         <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
         <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input type="text" inputmode="decimal" value="${it.valor_unitario||''}" onblur="atualizarItemOrcNum('${it.id}','valor_unitario',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" placeholder="R$ 0,00" /></td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)">
+      <input type="text" inputmode="decimal" 
+        value="${it.valor_unitario?Number(it.valor_unitario).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
+        onfocus="this.value=it.valor_unitario||'';this.select()"
+        onblur="if(this.value){atualizarItemOrcNum('${it.id}','valor_unitario',this.value.replace(',','.'));this.value=Number(this.value.replace(/[^0-9,.]/g,'')).toLocaleString('pt-BR',{minimumFractionDigits:2})}"
+        style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+    </td>
         <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;font-weight:500">${it._vt?it._vt.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}</td>
         <td style="padding:3px 4px;border:0.5px solid var(--border2)"><div style="display:flex;align-items:center;gap:2px"><input type="text" inputmode="decimal" value="${it.aliquota_nf!=null?Math.round(it.aliquota_nf*100):Math.round(aliq*100)}" onblur="atualizarItemOrcPct('${it.id}','aliquota_nf',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /><span style="font-size:11px;color:var(--text2)">%</span></div></td>
         <td style="padding:3px 4px;border:0.5px solid var(--border2)"><div style="display:flex;align-items:center;gap:2px"><input type="text" inputmode="decimal" value="${it.bdi!=null?Math.round(it.bdi*100):Math.round(bdi*100)}" onblur="atualizarItemOrcPct('${it.id}','bdi',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /><span style="font-size:11px;color:var(--text2)">%</span></div></td>
@@ -1409,6 +1422,13 @@ function renderAbaOrcamento(o){
       <div><span style="color:var(--text2)">Lucro/mês:</span> <strong style="color:var(--green)">${fmtMoeda(totB/tempo)}</strong></div>
     </div>`;
 }
+
+// Tab navigation in orçamento table
+document.addEventListener('keydown',function(e){
+  if(e.key==='Tab'&&e.target.closest('#obra-content-orcamento')){
+    // Let default tab work, blur will save
+  }
+});
 
 async function atualizarBdiObra(obraId,val){
   const v=(parseFloat(val)||60)/100;
@@ -1480,10 +1500,16 @@ function renderAbaCronograma(o){
     const soma=vals.reduce((a,v)=>a+v,0);
     return{...it,_vt:vt,_saldo:vt,_vals:vals,_diff:Math.abs(vt-soma)>0.01};
   });
+  const totVt=linhas.reduce((a,it)=>a+it._vt,0);
   const totCols=cols.map((_,ci)=>linhas.reduce((a,l)=>a+(l._vals[ci]||0),0));
   document.getElementById('obra-content-cronograma').innerHTML=`
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <button class="btn btn-sm btn-primary" onclick="adicionarColunaCron('${o.id}')">+ Mês</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--text2);font-weight:500">Período:</span>
+      <input type="month" id="cron-inicio-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)" />
+      <span style="font-size:12px;color:var(--text2)">até</span>
+      <input type="month" id="cron-fim-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)" />
+      <button class="btn btn-sm btn-primary" onclick="gerarColunasCron('${o.id}')">Gerar colunas</button>
+      <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${o.id}')" style="color:var(--red)">Limpar tudo</button>
     </div>
     <div style="overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)">
     <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:${500+cols.length*100}px">
@@ -1498,19 +1524,43 @@ function renderAbaCronograma(o){
         </th>`).join('')}
       </tr></thead>
       <tbody>
-      ${linhas.map(it=>`<tr>
-        <td style="padding:6px 8px;border-bottom:0.5px solid var(--border)">${it.servico||'—'}<div style="font-size:10px;color:var(--text2)">${it.categoria||''}</div></td>
-        <td style="padding:6px 8px;border-bottom:0.5px solid var(--border);text-align:right">${fmtMoeda(it._vt)}</td>
-        <td style="padding:6px 8px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--green)">${fmtMoeda(0)}</td>
-        <td style="padding:6px 8px;border-bottom:0.5px solid var(--border);text-align:right;${it._diff?'background:var(--amber-light);color:var(--amber)':''}" title="${it._diff?'⚠ Soma distribuída ≠ saldo a pagar':''}">${fmtMoeda(it._saldo)}${it._diff?' ⚠':''}</td>
-        ${cols.map((col,ci)=>`<td style="padding:3px 4px;border-bottom:0.5px solid var(--border)">
-          <input type="number" value="${it._vals[ci]||''}" onblur="atualizarCronValor('${it.id}','${col.id}','${o.id}',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+      ${linhas.reduce((acc,it,i)=>{
+        const prevCat=i>0?linhas[i-1].categoria:'';
+        const catChanged=it.categoria&&it.categoria!==prevCat&&i>0;
+        if(catChanged||i===0){
+          const catLabel=it.categoria||'';
+          acc+=`<tr><td colspan="${4+cols.length}" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">${catLabel}</td></tr>`;
+        }
+        acc+=`<tr>
+          <td style="padding:6px 8px;border:0.5px solid var(--border2)">${it.servico||'—'}</td>
+          <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(it._vt)}</td>
+          <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right;color:var(--green)">${fmtMoeda(0)}</td>
+          <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right;${it._diff?'background:var(--amber-light);color:var(--amber)':''}">${fmtMoeda(it._saldo)}${it._diff?' ⚠':''}</td>
+          ${cols.map((col,ci)=>`<td style="padding:3px 4px;border:0.5px solid var(--border2)">
+            <input type="text" inputmode="decimal" value="${it._vals[ci]?it._vals[ci].toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
+              onfocus="this.value='${it._vals[ci]||''}'"
+              onblur="atualizarCronValor('${it.id}','${col.id}','${o.id}',this.value.replace(',','.'))"
+              style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+          </td>`).join('')}
+        </tr>`;
+        return acc;
+      },'')}
+      <!-- Linha NF -->
+      <tr><td colspan="${4+cols.length}" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">Nota Fiscal</td></tr>
+      <tr>
+        <td style="padding:6px 8px;border:0.5px solid var(--border2)">Imposto sobre NF</td>
+        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
+        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right;color:var(--green)">${fmtMoeda(0)}</td>
+        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
+        ${cols.map(col=>`<td style="padding:3px 4px;border:0.5px solid var(--border2)">
+          <input type="text" inputmode="decimal" placeholder="0,00"
+            style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
         </td>`).join('')}
-      </tr>`).join('')}
+      </tr>
       <tr style="background:var(--bg);font-weight:600">
-        <td style="padding:8px">Total por mês</td>
-        <td colspan="3" style="padding:8px"></td>
-        ${totCols.map(t=>`<td style="padding:8px;text-align:right">${fmtMoeda(t)}</td>`).join('')}
+        <td style="padding:8px;border:0.5px solid var(--border2)">Total por mês</td>
+        <td colspan="3" style="padding:8px;border:0.5px solid var(--border2)"></td>
+        ${totCols.map(t=>`<td style="padding:8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(t)}</td>`).join('')}
       </tr>
       </tbody>
     </table></div>`;
@@ -1522,6 +1572,38 @@ async function adicionarColunaCron(obraId){
   await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:h.getMonth()+1,ano:h.getFullYear(),ordem:cols.length+1});
   await recarregarObras(true);
 }
+async function gerarColunasCron(obraId){
+  const inicioEl=document.getElementById('cron-inicio-'+obraId);
+  const fimEl=document.getElementById('cron-fim-'+obraId);
+  if(!inicioEl||!fimEl||!inicioEl.value||!fimEl.value){alert('Selecione o mês/ano de início e fim.');return;}
+  const[iy,im]=inicioEl.value.split('-').map(Number);
+  const[fy,fm]=fimEl.value.split('-').map(Number);
+  if(iy>fy||(iy===fy&&im>fm)){alert('Mês de início deve ser anterior ao fim.');return;}
+  const existentes=cronColunas.filter(c=>c.obra_id===obraId).length;
+  setSyncStatus('loading');
+  try{
+    let ordem=existentes;
+    let y=iy,m=im;
+    while(y<fy||(y===fy&&m<=fm)){
+      await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:m,ano:y,ordem:++ordem});
+      m++;if(m>12){m=1;y++;}
+    }
+    setSyncStatus('ok');await recarregarObras(true);
+  }catch(e){setSyncStatus('err');alert('Erro ao gerar colunas.');}
+}
+
+async function limparColunasCron(obraId){
+  if(!confirm('Excluir todas as colunas e valores do cronograma desta obra?'))return;
+  const cols=cronColunas.filter(c=>c.obra_id===obraId);
+  for(const col of cols){
+    await sb.from('cronograma_valores').delete().eq('coluna_id',col.id);
+    await sb.from('cronograma_colunas').delete().eq('id',col.id);
+  }
+  cronValores=cronValores.filter(cv=>!cols.find(c=>c.id===cv.coluna_id));
+  cronColunas=cronColunas.filter(c=>c.obra_id!==obraId);
+  await recarregarObras(true);
+}
+
 async function excluirColunaCron(id){
   if(!confirm('Excluir esta coluna?'))return;
   await sb.from('cronograma_valores').delete().eq('coluna_id',id);
