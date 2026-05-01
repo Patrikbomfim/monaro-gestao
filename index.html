@@ -1604,9 +1604,14 @@ function renderAbaCronograma(o){
         </td>`).join('')}
       </tr>
       <tr style="background:var(--bg);font-weight:600">
-        <td style="padding:8px;border:0.5px solid var(--border2)">Total por mês</td>
+        <td style="padding:8px;border:0.5px solid var(--border2)">Total previsto pagar</td>
         <td colspan="3" style="padding:8px;border:0.5px solid var(--border2)"></td>
         ${totCols.map(t=>`<td style="padding:8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(t)}</td>`).join('')}
+      </tr>
+      <tr style="background:var(--green-light)">
+        <td style="padding:8px;border:0.5px solid var(--border2);color:var(--green);font-weight:600">Previsto receber</td>
+        <td colspan="3" style="padding:8px;border:0.5px solid var(--border2);font-size:11px;color:var(--text3)">Integração financeiro</td>
+        ${cols.map(()=>`<td style="padding:8px;border:0.5px solid var(--border2);text-align:right;color:var(--green)">—</td>`).join('')}
       </tr>
       </tbody>
     </table></div>`;
@@ -1642,6 +1647,18 @@ function renderCronControls(obraId){
     <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${obraId}')" style="color:var(--red)">Limpar tudo</button>`;
 }
 
+async function recarregarCronograma(obraId){
+  const[cc,cv,ob]=await Promise.all([
+    sb.from('cronograma_colunas').select('*').order('ordem'),
+    sb.from('cronograma_valores').select('*'),
+    sb.from('obras').select('*').order('criado_em'),
+  ]);
+  cronColunas=cc.data||[];cronValores=cv.data||[];obras=ob.data||[];
+  const oAtual=obras.find(x=>x.id===obraId);
+  if(oAtual)renderAbaCronograma(oAtual);
+  renderObrasKanban();
+}
+
 async function gerarColunasCron(obraId){
   const mesIniEl=document.getElementById('cron-mes-ini-'+obraId);
   const anoIniEl=document.getElementById('cron-ano-ini-'+obraId);
@@ -1652,38 +1669,49 @@ async function gerarColunasCron(obraId){
   const fm=parseInt(mesFimEl.value),fy=parseInt(anoFimEl.value);
   if(!iy||!fy||isNaN(iy)||isNaN(fy)){alert('Preencha os anos.');return;}
   if(iy>fy||(iy===fy&&im>fm)){alert('Mês de início deve ser anterior ao fim.');return;}
-  const existentes=cronColunas.filter(c=>c.obra_id===obraId).length;
   setSyncStatus('loading');
   try{
-    let ordem=existentes;
-    let y=iy,m=im;
-    // Fetch fresh to avoid duplicates
-  const{data:freshCols}=await sb.from('cronograma_colunas').select('*').eq('obra_id',obraId);
-  const existingMeses=(freshCols||[]).map(c=>c.mes+'-'+c.ano);
-  while(y<fy||(y===fy&&m<=fm)){
-    const key=m+'-'+y;
-    if(!existingMeses.includes(key)){
-      existingMeses.push(key); // prevent duplicates within same batch
-      await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:m,ano:y,ordem:++ordem});
+    // Fetch fresh cols and their values
+    const{data:freshCols}=await sb.from('cronograma_colunas').select('*').eq('obra_id',obraId);
+    const{data:freshVals}=await sb.from('cronograma_valores').select('*').eq('obra_id',obraId);
+    
+    // Find cols with no values (safe to delete)
+    const colsWithValues=new Set((freshVals||[]).filter(v=>v.valor&&v.valor!==0).map(v=>v.coluna_id));
+    
+    // Delete empty cols that aren't in the new range
+    const newMeses=new Set();
+    let ty=iy,tm=im;
+    while(ty<fy||(ty===fy&&tm<=fm)){newMeses.add(tm+'-'+ty);tm++;if(tm>12){tm=1;ty++;}}
+    
+    for(const col of (freshCols||[])){
+      const key=col.mes+'-'+col.ano;
+      if(!newMeses.has(key)&&!colsWithValues.has(col.id)){
+        // Remove empty col not in new range
+        await sb.from('cronograma_colunas').delete().eq('id',col.id);
+      }
     }
-    m++;if(m>12){m=1;y++;}
-  }
+    
+    // Fetch again after deletions
+    const{data:remainCols}=await sb.from('cronograma_colunas').select('*').eq('obra_id',obraId);
+    const existingMeses=new Set((remainCols||[]).map(c=>c.mes+'-'+c.ano));
+    let ordem=(remainCols||[]).length;
+    
+    let y=iy,m=im;
+    while(y<fy||(y===fy&&m<=fm)){
+      const key=m+'-'+y;
+      if(!existingMeses.has(key)){
+        existingMeses.add(key);
+        await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:m,ano:y,ordem:++ordem});
+      }
+      m++;if(m>12){m=1;y++;}
+    }
     setSyncStatus('ok');
-    // Reload cron data
-    const{data:cc}=await sb.from('cronograma_colunas').select('*').order('ordem');
-    const{data:cv}=await sb.from('cronograma_valores').select('*');
-    cronColunas=cc||[];cronValores=cv||[];
-    const{data:ob}=await sb.from('obras').select('*').order('criado_em');
-    obras=ob||[];
-    // Re-render only the table, not the controls
-    const oAtual=obras.find(x=>x.id===obraId);
-    if(oAtual)renderAbaCronograma(oAtual);
-    renderObrasKanban();
+    await recarregarCronograma(obraId);
   }catch(e){setSyncStatus('err');alert('Erro ao gerar colunas: '+(e.message||e));}
 }
 
 async function limparColunasCron(obraId){
-  if(!confirm('Excluir todas as colunas e valores do cronograma desta obra?'))return;
+  if(!confirm('⚠ Atenção! Isso irá excluir TODAS as colunas e valores distribuídos no cronograma. Você perderá toda a distribuição mensal feita. Deseja continuar?'))return;
   const cols=cronColunas.filter(c=>c.obra_id===obraId);
   for(const col of cols){
     await sb.from('cronograma_valores').delete().eq('coluna_id',col.id);
