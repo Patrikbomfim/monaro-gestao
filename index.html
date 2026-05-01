@@ -350,7 +350,19 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
         </div>
       </div>
     </div>
-    <div class="page" id="page-obras"><div class="page-header"><div class="page-title">Obras</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
+    <!-- OBRAS -->
+    <div class="page" id="page-obras">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
+          <button class="btn btn-primary" onclick="abrirModalObra()">+ Nova obra</button>
+          <div style="flex:1"><div class="page-title">Obras</div><div class="page-sub">Quadro de obras</div></div>
+          <button class="btn btn-sm" onclick="exportarObrasPDF()">⬇ PDF</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div id="kanban-obras" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;align-items:flex-start"></div>
+      </div>
+    </div>
     <div class="page" id="page-financeiro"><div class="page-header"><div class="page-title">Financeiro</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
     <div class="page" id="page-estoque"><div class="page-header"><div class="page-title">Estoque</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
 
