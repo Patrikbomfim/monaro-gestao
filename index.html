@@ -1120,7 +1120,7 @@ function renderObrasKanban(){
       const nCompras=ativas?itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='compra'&&it.status==='a-comprar').length:0;
       const nProp=ativas?itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='proprio'&&it.status==='sem-agenda').length:0;
       const nDoc=ativas?DOCS_OBRA.length-itensObra.filter(it=>it.obra_id===o.id&&it.tipo==='documento'&&it.status==='comprado').length:0;
-      return`<div class="kanban-card" onclick="abrirObra('${o.id}')">
+      return`<div class="kanban-card" onclick="abrirObra('${o.id}')" style="cursor:pointer">
         <div class="kanban-card-name">${o.nome}</div>
         ${cliente?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${cliente.condominio}</div>`:''}
         <div style="font-size:11px;color:var(--text3);margin-top:3px">${dias} dia${dias!==1?'s':''} em aberto</div>
@@ -1181,9 +1181,10 @@ function selCliente(id,nome){
 async function salvarObra(abrirNovo=false){
   const nome=document.getElementById('mob-nome').value.trim();
   if(!nome){alert('Preencha o nome da obra.');return;}
+  const clienteIdVal=document.getElementById('mob-cliente-id').value.trim();
   const dados={
     nome,
-    cliente_id:document.getElementById('mob-cliente-id').value||null,
+    cliente_id:clienteIdVal||null,
     status:document.getElementById('mob-status').value,
     tempo_execucao:parseInt(document.getElementById('mob-tempo').value)||null,
     data_inicio:document.getElementById('mob-inicio').value||null,
@@ -1193,11 +1194,18 @@ async function salvarObra(abrirNovo=false){
   };
   setSyncStatus('loading');
   try{
-    if(editObraId){await sb.from('obras').update(dados).eq('id',editObraId);}
-    else{await sb.from('obras').insert(dados);}
-    setSyncStatus('ok');await recarregarObras();
-    if(abrirNovo){abrirModalObra();}else{fecharModal('modal-obra');}
-  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+    if(editObraId){
+      const{error}=await sb.from('obras').update(dados).eq('id',editObraId);
+      if(error)throw error;
+    }else{
+      const{error}=await sb.from('obras').insert(dados);
+      if(error)throw error;
+    }
+    setSyncStatus('ok');
+    fecharModal('modal-obra');
+    await recarregarObras();
+    if(abrirNovo){abrirModalObra();}
+  }catch(e){setSyncStatus('err');console.error('Erro salvarObra:',e);alert('Erro ao salvar: '+(e.message||e));} 
 }
 
 async function excluirObra(){
@@ -1210,26 +1218,45 @@ async function excluirObra(){
 
 async function recarregarObras(){
   const[ob,oi,io,cc,cv]=await Promise.all([
-    sb.from('obras').select('*').order('criado_em').then(r=>r).catch(()=>({data:[]})),
+    sb.from('obras').select('*').order('criado_em').then(r=>r).catch(e=>{console.error('obras err',e);return{data:[]};}),
     sb.from('orcamento_itens').select('*').order('item').then(r=>r).catch(()=>({data:[]})),
     sb.from('itens_obra').select('*').order('criado_em').then(r=>r).catch(()=>({data:[]})),
     sb.from('cronograma_colunas').select('*').order('ordem').then(r=>r).catch(()=>({data:[]})),
     sb.from('cronograma_valores').select('*').then(r=>r).catch(()=>({data:[]})),
   ]);
   obras=ob.data||[];orcamentoItens=oi.data||[];itensObra=io.data||[];cronColunas=cc.data||[];cronValores=cv.data||[];
-  renderObrasKanban();renderDashboard();if(obraAtualId)renderObraScreen();
+  renderObrasKanban();
+  renderDashboard();
+  if(obraAtualId){
+    const oAinda=obras.find(x=>x.id===obraAtualId);
+    if(oAinda)renderObraScreen();
+  }
 }
 
-function abrirObra(id){obraAtualId=id;document.getElementById('obra-screen').classList.add('open');renderObraScreen();}
-function fecharTelaObra(){document.getElementById('obra-screen').classList.remove('open');obraAtualId=null;}
+function abrirObra(id){
+  obraAtualId=id;
+  obraAbaAtual='cadastro';
+  const el=document.getElementById('obra-screen');
+  if(el){el.classList.add('open');el.style.display='flex';}
+  renderObraScreen();
+}
+function fecharTelaObra(){
+  const el=document.getElementById('obra-screen');
+  if(el){el.classList.remove('open');el.style.display='none';}
+  obraAtualId=null;
+}
 
 function renderObraScreen(){
-  const o=obras.find(x=>x.id===obraAtualId);if(!o)return;
-  const info=statusObraInfo(o.status);
+  const o=obras.find(x=>x.id===obraAtualId);
+  if(!o){console.error('Obra nao encontrada:',obraAtualId);return;}
+  const info=statusObraInfo(o.status||'aberto');
   const cl=clientes.find(c=>c.id===o.cliente_id);
-  document.getElementById('obra-screen-title').textContent=o.nome;
-  document.getElementById('obra-screen-sub').textContent=cl?cl.condominio:'';
-  document.getElementById('obra-screen-badge').innerHTML=`<span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:${info[2]}22;color:${info[2]}">${info[1]}</span>`;
+  const titleEl=document.getElementById('obra-screen-title');
+  const subEl=document.getElementById('obra-screen-sub');
+  const badgeEl=document.getElementById('obra-screen-badge');
+  if(titleEl)titleEl.textContent=o.nome||'Obra';
+  if(subEl)subEl.textContent=cl?cl.condominio:'';
+  if(badgeEl)badgeEl.innerHTML=`<span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:${info[2]}22;color:${info[2]}">${info[1]}</span>`;
   switchObraAba(obraAbaAtual);
 }
 
@@ -1905,7 +1932,7 @@ if(typeof lucide !== 'undefined'){lucide.createIcons();}
 </script>
 
 <!-- TELA DA OBRA -->
-<div id="obra-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;flex-direction:column;overflow:hidden;">
+<div id="obra-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;flex-direction:column;overflow:hidden;" class="">
   <div style="background:var(--text);padding:0 1.5rem;display:flex;align-items:center;gap:12px;height:52px;flex-shrink:0">
     <button onclick="fecharTelaObra()" style="background:transparent;border:0.5px solid rgba(255,255,255,0.2);color:#aaa;font-family:inherit;font-size:13px;padding:5px 12px;border-radius:var(--radius);cursor:pointer">← Voltar</button>
     <div id="obra-screen-title" style="color:#fff;font-size:15px;font-weight:600"></div>
@@ -1944,7 +1971,7 @@ if(typeof lucide !== 'undefined'){lucide.createIcons();}
     <div class="modal-body">
       <div class="modal-title" id="mob-titulo">Nova obra</div>
       <div class="form-grid">
-        <div class="form-row full"><label class="form-label required">Nome da obra</label><input id="mob-nome" placeholder="Ex: Pintura fachada — Ed. Flamboyant" /></div>
+        <div class="form-row full"><label class="form-label required">Nome da obra</label><input id="mob-nome" placeholder="Ex: Pintura fachada lateral" /></div>
         <div class="form-row full" style="position:relative">
           <label class="form-label">Cliente / Condomínio</label>
           <input id="mob-cliente" placeholder="Digite para buscar..." autocomplete="off" />
