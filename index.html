@@ -57,7 +57,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── CONTENT ── */
 .page{display:none;flex:1;flex-direction:column;overflow:hidden;}
 .page.active{display:flex;}
-.page-header{padding:1.25rem 2rem 0;flex-shrink:0;}
+.page-header{padding:1rem 2rem 0;flex-shrink:0;}
 .page-title{font-size:20px;font-weight:600;margin-bottom:4px;}
 .page-sub{font-size:13px;color:var(--text2);}
 .page-body{flex:1;overflow-y:auto;padding:1rem 2rem 2rem;}
@@ -109,7 +109,9 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 /* ── MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:1rem;}
 .overlay.open{display:flex;}
-.modal{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.modal{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border2);width:100%;max-width:520px;height:auto;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-body{padding:1.5rem;flex:1;overflow-y:auto;min-height:0;overscroll-behavior:contain;}
+.modal-footer{padding:0.875rem 1.5rem;border-top:0.5px solid var(--border);background:var(--surface);display:flex;gap:8px;justify-content:flex-end;border-radius:0 0 var(--radius-lg) var(--radius-lg);flex-shrink:0;position:sticky;bottom:0;}
 .modal-title{font-size:16px;font-weight:600;margin-bottom:1.25rem;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .form-grid .full{grid-column:1/-1;}
@@ -176,6 +178,7 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
       <button class="nav-item" onclick="navTo('obras')"><span class="nav-icon">🏗</span><span class="nav-label">Obras</span></button>
       <button class="nav-item" onclick="navTo('financeiro')"><span class="nav-icon">💰</span><span class="nav-label">Financeiro</span></button>
       <button class="nav-item" onclick="navTo('estoque')"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></button>
+      <button class="nav-item" onclick="navTo('compromissos')"><span class="nav-icon">📌</span><span class="nav-label">Compromissos</span></button>
       <div class="nav-section">Pessoas</div>
       <button class="nav-item" onclick="navTo('dias-trabalhados')"><span class="nav-icon">📅</span><span class="nav-label">Dias trabalhados</span></button>
       <button class="nav-item" onclick="navTo('rh')"><span class="nav-icon">📋</span><span class="nav-label">Gestão RH</span></button>
@@ -197,14 +200,22 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="page-header"><div class="page-title">Dashboard</div><div class="page-sub">Visão geral do negócio</div></div>
+      <div class="page-header"><div class="page-title">Dashboard</div><div class="page-sub" id="dash-data"></div></div>
       <div class="page-body">
-        <div style="display:grid;grid-template-columns:300px 1fr;gap:16px">
+        <!-- Cards clicáveis -->
+        <div class="cards-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:1.5rem" id="dash-cards"></div>
+        <!-- Linha inferior -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <!-- Aniversariantes -->
           <div class="card">
             <div class="card-label" style="margin-bottom:12px">🎂 Aniversariantes hoje</div>
-            <div id="dashboard-aniversariantes"><p style="color:var(--text3);font-size:13px">Carregando...</p></div>
+            <div id="dashboard-aniversariantes"><p style="color:var(--text3);font-size:13px">Nenhum aniversariante hoje.</p></div>
           </div>
-          <div class="card"><div class="card-label">Em construção</div><div style="color:var(--text3);font-size:13px;margin-top:8px">Mais informações serão adicionadas em breve.</div></div>
+          <!-- Compromissos -->
+          <div class="card">
+            <div class="card-label" style="margin-bottom:12px">📌 Compromissos — hoje e amanhã</div>
+            <div id="dash-compromissos"><p style="color:var(--text3);font-size:13px">Nenhum compromisso.</p></div>
+          </div>
         </div>
       </div>
     </div>
@@ -212,28 +223,16 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <!-- CLIENTES -->
     <div class="page" id="page-clientes">
       <div class="page-header">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-          <div><div class="page-title">Clientes</div><div class="page-sub">Condomínios e contatos cadastrados</div></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="exportarClientesCSV()">⬇ CSV</button>
-            <button class="btn" onclick="exportarClientesPDF()">⬇ PDF</button>
-            <button class="btn btn-primary" onclick="abrirCliente()">+ Novo cliente</button>
-          </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
+          <button class="btn btn-primary" onclick="abrirCliente()">+ Novo cliente</button>
+          <div style="flex:1"><div class="page-title">Clientes</div><div class="page-sub">Condomínios e contatos cadastrados</div></div>
+          <button class="btn btn-sm" onclick="exportarClientesCSV()">⬇ CSV</button>
+          <button class="btn btn-sm" onclick="exportarClientesPDF()">⬇ PDF</button>
         </div>
         <div class="toolbar">
-          <div class="search-wrap">
-            <input id="search-clientes" placeholder="Buscar por condomínio, contato ou cidade..." oninput="renderClientes()" />
-          </div>
-          <select id="filter-clientes-origem" onchange="renderClientes()" style="width:auto">
-            <option value="">Todas as origens</option>
-            <option value="indicacao">Indicação</option>
-            <option value="rede-social">Rede social</option>
-            <option value="whatsapp">Grupo WhatsApp</option>
-            <option value="outro">Outro</option>
-          </select>
-          <select id="filter-clientes-estado" onchange="renderClientes()" style="width:auto">
-            <option value="">Todos os estados</option>
-          </select>
+          <div class="search-wrap"><input id="search-clientes" placeholder="Buscar por condomínio, contato ou cidade..." oninput="renderClientes()" /></div>
+          <select id="filter-clientes-origem" onchange="renderClientes()" style="width:auto"><option value="">Todas as origens</option><option value="indicacao">Indicação</option><option value="rede-social">Rede social</option><option value="whatsapp">Grupo WhatsApp</option><option value="outro">Outro</option></select>
+          <select id="filter-clientes-estado" onchange="renderClientes()" style="width:auto"><option value="">Todos os estados</option></select>
           <button class="btn btn-ghost btn-sm" onclick="limparFiltrosClientes()">Limpar</button>
         </div>
       </div>
@@ -260,11 +259,13 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     <div class="page" id="page-fornecedores">
       <div class="page-header">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-          <div><div class="page-title">Fornecedores</div><div class="page-sub">Base de fornecedores cadastrados</div></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="btn btn-primary" onclick="abrirFornecedor()">+ Novo fornecedor</button>
+            <div><div class="page-title">Fornecedores</div><div class="page-sub">Base de fornecedores cadastrados</div></div>
+          </div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="exportarFornecedoresCSV()">⬇ CSV</button>
             <button class="btn" onclick="exportarFornecedoresPDF()">⬇ PDF</button>
-            <button class="btn btn-primary" onclick="abrirFornecedor()">+ Novo fornecedor</button>
           </div>
         </div>
         <div class="toolbar">
@@ -303,10 +304,60 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
     </div>
 
     <!-- PLACEHOLDER PAGES -->
-    <div class="page" id="page-funcionarios"><div class="page-header"><div class="page-title">Funcionários</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
+    <!-- FUNCIONÁRIOS -->
+    <div class="page" id="page-funcionarios">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
+          <button class="btn btn-primary" onclick="abrirFuncionario()">+ Novo funcionário</button>
+          <div style="flex:1"><div class="page-title">Funcionários</div><div class="page-sub">Equipe cadastrada</div></div>
+          <button class="btn btn-sm" onclick="exportarFuncionariosCSV()">⬇ CSV</button>
+          <button class="btn btn-sm" onclick="exportarFuncionariosPDF()">⬇ PDF</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap"><input id="search-func" placeholder="Buscar por nome ou função..." oninput="renderFuncionarios()" /></div>
+          <select id="filter-func-cargo" onchange="renderFuncionarios()" style="width:auto"><option value="">Todos os cargos</option><option value="Ajudante">Ajudante</option><option value="Profissional">Profissional</option><option value="Encarregado">Encarregado</option><option value="Supervisor">Supervisor</option><option value="Logística">Logística</option><option value="Sócio proprietário">Sócio proprietário</option><option value="Gerente administrativo">Gerente administrativo</option></select>
+          <select id="filter-func-status" onchange="renderFuncionarios()" style="width:auto"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option></select>
+          <button class="btn btn-ghost btn-sm" onclick="limparFiltrosFunc()">Limpar</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="cards-grid" id="cards-func"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:22%">Nome</th>
+              <th style="width:16%">Cargo</th>
+              <th style="width:14%">Telefone</th>
+              <th style="width:16%">Chave Pix</th>
+              <th style="width:18%">Favorecido Pix</th>
+              <th style="width:14%">Status</th>
+            </tr></thead>
+            <tbody id="tbody-func"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     <div class="page" id="page-obras"><div class="page-header"><div class="page-title">Obras</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
     <div class="page" id="page-financeiro"><div class="page-header"><div class="page-title">Financeiro</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
     <div class="page" id="page-estoque"><div class="page-header"><div class="page-title">Estoque</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
+
+    <!-- COMPROMISSOS -->
+    <div class="page" id="page-compromissos">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
+          <button class="btn btn-primary" onclick="abrirCompromisso()">+ Novo compromisso</button>
+          <div style="flex:1"><div class="page-title">Compromissos</div><div class="page-sub">Lembretes e compromissos da equipe</div></div>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap"><input id="search-comp" placeholder="Buscar compromisso..." oninput="renderCompromissos()" /></div>
+          <select id="filter-comp-status" onchange="renderCompromissos()" style="width:auto"><option value="pendente">Pendentes</option><option value="concluido">Concluídos</option><option value="">Todos</option></select>
+          <button class="btn btn-ghost btn-sm" onclick="limparFiltrosComp()">Limpar</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div id="lista-compromissos"></div>
+      </div>
+    </div>
     <div class="page" id="page-dias-trabalhados"><div class="page-header"><div class="page-title">Dias Trabalhados</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
     <div class="page" id="page-rh"><div class="page-header"><div class="page-title">Gestão RH</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
     <div class="page" id="page-ferramentas"><div class="page-header"><div class="page-title">Ferramentas Pessoais</div></div><div class="page-body"><div style="display:flex;align-items:center;justify-content:center;height:200px;color:var(--text3)">Em construção</div></div></div>
@@ -321,6 +372,7 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 <!-- MODAL CLIENTE -->
 <div class="overlay" id="modal-cliente">
   <div class="modal" style="max-width:600px">
+    <div class="modal-body">
     <div class="modal-title" id="mc-titulo">Novo cliente</div>
     <div class="section-label">Dados do condomínio</div>
     <div class="form-grid">
@@ -362,9 +414,12 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
       </div>
     </div>
     <div class="form-actions">
+    </div><!-- /modal-body -->
+    <div class="modal-footer">
       <button class="btn btn-danger" id="mc-excluir" style="display:none;margin-right:auto" onclick="excluirCliente()">Excluir</button>
-      <button class="btn" onclick="fecharModal('modal-cliente')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarCliente()">Salvar</button>
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)" onclick="salvarClienteNovo()">Salvar e adicionar</button>
+      <button class="btn btn-primary btn-sm" onclick="salvarCliente()">Salvar</button>
     </div>
   </div>
 </div>
@@ -372,6 +427,7 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
 <!-- MODAL FORNECEDOR -->
 <div class="overlay" id="modal-forn">
   <div class="modal" style="max-width:560px">
+    <div class="modal-body">
     <div class="modal-title" id="mf-titulo">Novo fornecedor</div>
     <div class="form-grid">
       <div class="form-row full"><label class="form-label required">Nome</label><input id="mf-nome" placeholder="Nome do fornecedor" /></div>
@@ -396,9 +452,108 @@ tr:hover td{background:var(--surface2);cursor:pointer;}
       <div class="form-row full"><label class="form-label">Observações</label><textarea id="mf-obs" placeholder="Informações adicionais..."></textarea></div>
     </div>
     <div class="form-actions">
+    </div><!-- /modal-body -->
+    <div class="modal-footer">
       <button class="btn btn-danger" id="mf-excluir" style="display:none;margin-right:auto" onclick="excluirFornecedor()">Excluir</button>
-      <button class="btn" onclick="fecharModal('modal-forn')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarFornecedor()">Salvar</button>
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal('modal-forn')">Cancelar</button>
+      <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)" onclick="salvarFornecedorNovo()">Salvar e adicionar</button>
+      <button class="btn btn-primary btn-sm" onclick="salvarFornecedor()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FUNCIONÁRIO -->
+<div class="overlay" id="modal-func">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-body">
+    <div class="modal-title" id="mfn-titulo">Novo funcionário</div>
+    <div class="section-label">Dados pessoais</div>
+    <div class="form-grid">
+      <div class="form-row full"><label class="form-label required">Nome completo</label><input id="mfn-nome" placeholder="Nome completo" /></div>
+      <div class="form-row"><label class="form-label">Cargo</label>
+        <select id="mfn-cargo">
+          <option value="">Selecione...</option>
+          <option>Ajudante</option><option>Profissional</option><option>Encarregado</option>
+          <option>Supervisor</option><option>Logística</option><option>Sócio proprietário</option><option>Gerente administrativo</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">Função / Especialidade</label><input id="mfn-funcao" placeholder="Ex: Rapelista, Pintor..." /></div>
+      <div class="form-row"><label class="form-label">CPF</label><input id="mfn-cpf" placeholder="000.000.000-00" /></div>
+      <div class="form-row"><label class="form-label">Telefone</label><input id="mfn-telefone" placeholder="(44) 99999-0000" /></div>
+      <div class="form-row"><label class="form-label">Data de nascimento</label><input id="mfn-nascimento" type="date" /></div>
+      <div class="form-row"><label class="form-label">Data de admissão</label><input id="mfn-admissao" type="date" /></div>
+      <div class="form-row"><label class="form-label">Tipo sanguíneo</label>
+        <select id="mfn-tipo-sang">
+          <option value="">Selecione...</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">Status</label>
+        <select id="mfn-ativo"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Contato de emergência</div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Nome</label><input id="mfn-contato-nome" placeholder="Nome do contato" /></div>
+      <div class="form-row"><label class="form-label">Telefone</label><input id="mfn-contato-tel" placeholder="(44) 99999-0000" /></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Dados bancários</div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">Chave Pix</label><input id="mfn-pix" placeholder="CPF, telefone ou e-mail" /></div>
+      <div class="form-row"><label class="form-label">Nome favorecido</label><input id="mfn-favorecido" placeholder="Nome completo" /></div>
+      <div class="form-row"><label class="form-label">Banco</label><input id="mfn-banco" placeholder="Ex: Nubank, Itaú..." /></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Endereço</div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">CEP</label><input id="mfn-cep" placeholder="00000-000" onblur="buscarCEPFunc()" /></div>
+      <div class="form-row"><label class="form-label">Número</label><input id="mfn-numero" placeholder="123" /></div>
+      <div class="form-row full"><label class="form-label">Rua</label><input id="mfn-rua" placeholder="Av. Exemplo" /></div>
+      <div class="form-row"><label class="form-label">Bairro</label><input id="mfn-bairro" placeholder="Centro" /></div>
+      <div class="form-row"><label class="form-label">Cidade</label><input id="mfn-cidade" placeholder="Maringá" /></div>
+      <div class="form-row"><label class="form-label">Estado</label>
+        <select id="mfn-estado"><option value="">UF</option>
+          <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+    </div><!-- /modal-body -->
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="mfn-excluir" style="display:none;margin-right:auto" onclick="excluirFuncionario()">Excluir</button>
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal('modal-func')">Cancelar</button>
+      <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)" onclick="salvarFuncionarioNovo()">Salvar e adicionar</button>
+      <button class="btn btn-primary btn-sm" onclick="salvarFuncionario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPROMISSO -->
+<div class="overlay" id="modal-comp">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-body">
+      <div class="modal-title" id="mcomp-titulo">Novo compromisso</div>
+      <div class="form-grid">
+        <div class="form-row full"><label class="form-label required">Descrição / Tarefa</label><textarea id="mcomp-desc" placeholder="Ex: Reunião com síndico Ed. Flamboyant..." style="min-height:60px"></textarea></div>
+        <div class="form-row"><label class="form-label">Data</label><input id="mcomp-data" type="date" /></div>
+        <div class="form-row"><label class="form-label">Hora</label><input id="mcomp-hora" type="time" /></div>
+        <div class="form-row full"><label class="form-label">Local</label><input id="mcomp-local" placeholder="Ex: Sala de reunião, Ed. Flamboyant..." /></div>
+        <div class="form-row"><label class="form-label">Status</label>
+          <select id="mcomp-status">
+            <option value="pendente">Pendente</option>
+            <option value="concluido">Concluído</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="mcomp-excluir" style="display:none;margin-right:auto" onclick="excluirCompromisso()">Excluir</button>
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal('modal-comp')">Cancelar</button>
+      <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)" onclick="salvarCompromissoNovo()">Salvar e adicionar</button>
+      <button class="btn btn-primary btn-sm" onclick="salvarCompromisso()">Salvar</button>
     </div>
   </div>
 </div>
@@ -408,8 +563,8 @@ const SUPABASE_URL='https://qxhvnpippvlobkzjyhto.supabase.co';
 const SUPABASE_KEY='sb_publishable_A9jCcn7_6dJ-sqp1Pum4rw_vsBwVCr7';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let clientes=[], fornecedores=[];
-let editClienteId=null, editFornId=null;
+let clientes=[], fornecedores=[], funcionarios=[], compromissos=[];
+let editClienteId=null, editFornId=null, editFuncId=null, editCompId=null;
 
 // ── HELPERS ──────────────────────────────────────────────
 function setSyncStatus(st){
@@ -450,16 +605,23 @@ document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==
 
 // ── LOAD ─────────────────────────────────────────────────
 async function carregarTudo(){
-  const[c,f]=await Promise.all([
-    sb.from('clientes').select('*').order('condominio'),
-    sb.from('fornecedores').select('*').order('nome'),
+  const[c,f,fn,co]=await Promise.all([
+    sb.from('clientes').select('*').order('condominio').then(r=>r).catch(()=>({data:[]})),
+    sb.from('fornecedores').select('*').order('nome').then(r=>r).catch(()=>({data:[]})),
+    sb.from('funcionarios').select('*').order('nome').then(r=>r).catch(()=>({data:[]})),
+    sb.from('compromissos_agenda').select('*').order('data').then(r=>r).catch(()=>({data:[]})),
   ]);
   clientes=c.data||[];
   fornecedores=f.data||[];
+  funcionarios=fn.data||[];
+  compromissos=co.data||[];
   renderClientes();
   renderFornecedores();
+  renderFuncionarios();
+  renderCompromissos();
   atualizarFiltroEstados();
   renderAniversariantes();
+  renderDashboard();
 }
 
 // ── NAV ──────────────────────────────────────────────────
@@ -528,6 +690,21 @@ function toggleQuemIndicou(){
   document.getElementById('row-quem-indicou').style.display=origem==='indicacao'?'block':'none';
 }
 
+async function buscarCEPFunc(){
+  const cep=document.getElementById('mfn-cep').value.replace(/\D/g,'');
+  if(cep.length!==8)return;
+  try{
+    const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d=await r.json();
+    if(!d.erro){
+      document.getElementById('mfn-rua').value=d.logradouro||'';
+      document.getElementById('mfn-bairro').value=d.bairro||'';
+      document.getElementById('mfn-cidade').value=d.localidade||'';
+      document.getElementById('mfn-estado').value=d.uf||'';
+    }
+  }catch(e){}
+}
+
 async function buscarCEP(){
   const cep=document.getElementById('mc-cep').value.replace(/\D/g,'');
   if(cep.length!==8)return;
@@ -567,7 +744,7 @@ function abrirCliente(id){
   document.getElementById('modal-cliente').classList.add('open');
 }
 
-async function salvarCliente(){
+async function salvarCliente(abrirNovo=false){
   const condominio=document.getElementById('mc-condominio').value.trim();
   const contato=document.getElementById('mc-contato').value.trim();
   if(!condominio||!contato){alert('Preencha condomínio e contato.');return;}
@@ -591,9 +768,10 @@ async function salvarCliente(){
   try{
     if(editClienteId){await sb.from('clientes').update(dados).eq('id',editClienteId);}
     else{await sb.from('clientes').insert(dados);}
-    setSyncStatus('ok');fecharModal('modal-cliente');
+    setSyncStatus('ok');
     const{data}=await sb.from('clientes').select('*').order('condominio');
     clientes=data||[];renderClientes();atualizarFiltroEstados();
+    if(abrirNovo){abrirCliente();}else{fecharModal('modal-cliente');}
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 
@@ -683,7 +861,7 @@ function abrirFornecedor(id){
   document.getElementById('modal-forn').classList.add('open');
 }
 
-async function salvarFornecedor(){
+async function salvarFornecedor(abrirNovo=false){
   const nome=document.getElementById('mf-nome').value.trim();
   if(!nome){alert('Preencha o nome.');return;}
   const dados={
@@ -703,9 +881,10 @@ async function salvarFornecedor(){
   try{
     if(editFornId){await sb.from('fornecedores').update(dados).eq('id',editFornId);}
     else{await sb.from('fornecedores').insert(dados);}
-    setSyncStatus('ok');fecharModal('modal-forn');
+    setSyncStatus('ok');
     const{data}=await sb.from('fornecedores').select('*').order('nome');
     fornecedores=data||[];renderFornecedores();
+    if(abrirNovo){abrirFornecedor();}else{fecharModal('modal-forn');}
   }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
 }
 
@@ -741,8 +920,339 @@ function exportarFornecedoresPDF(){
   w.document.close();setTimeout(()=>w.print(),400);
 }
 
+// ── SALVAR E NOVO ────────────────────────────────────────
+async function salvarClienteNovo(){await salvarCliente(true);}
+async function salvarFornecedorNovo(){await salvarFornecedor(true);}
+async function salvarFuncionarioNovo(){await salvarFuncionario(true);}
+async function salvarCompromissoNovo(){await salvarCompromisso(true);}
+
 // ── MODALS ───────────────────────────────────────────────
 // Fechamento apenas pelo botão Cancelar — evita fechar ao selecionar texto
+
+// ── FUNCIONÁRIOS ─────────────────────────────────────────
+const CORES_FUNC=['#E85D26','#185FA5','#0F6E56','#854F0B','#534AB7','#993556','#3B6D11','#A32D2D','#0C447C','#633806'];
+function corFunc(i){return CORES_FUNC[i%CORES_FUNC.length];}
+function iniciaisFunc(nome){return nome.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();}
+
+function renderFuncionarios(){
+  const q=(document.getElementById('search-func')?.value||'').toLowerCase();
+  const fc=document.getElementById('filter-func-cargo')?.value||'';
+  const fs=document.getElementById('filter-func-status')?.value||'';
+  const lista=funcionarios.filter(f=>
+    (f.nome+(f.funcao||'')+(f.cidade||'')).toLowerCase().includes(q)&&
+    (!fc||f.cargo===fc)&&
+    (!fs||(f.ativo||'ativo')===fs)
+  );
+  // cards
+  document.getElementById('cards-func').innerHTML=`
+    <div class="card"><div class="card-label">Total</div><div class="card-value">${funcionarios.length}</div></div>
+    <div class="card"><div class="card-label">Ativos</div><div class="card-value" style="color:var(--green)">${funcionarios.filter(f=>(f.ativo||'ativo')==='ativo').length}</div></div>
+    <div class="card"><div class="card-label">Encarregados</div><div class="card-value" style="color:var(--orange)">${funcionarios.filter(f=>f.cargo==='Encarregado').length}</div></div>
+    <div class="card"><div class="card-label">Profissionais</div><div class="card-value" style="color:var(--blue)">${funcionarios.filter(f=>f.cargo==='Profissional').length}</div></div>
+    <div class="card"><div class="card-label">Ajudantes</div><div class="card-value" style="color:var(--text2)">${funcionarios.filter(f=>f.cargo==='Ajudante').length}</div></div>`;
+  const tbody=document.getElementById('tbody-func');
+  if(!lista.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="7">Nenhum funcionário encontrado.</td></tr>`;return;}
+  tbody.innerHTML=lista.map((f,i)=>{
+    const idx=funcionarios.indexOf(f);
+    const cor=corFunc(idx);
+    const isInativo=(f.ativo||'ativo')==='inativo';
+    return`<tr onclick="abrirFuncionario('${f.id}')" style="opacity:${isInativo?0.6:1}">
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${cor};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0">${iniciaisFunc(f.nome)}</div>
+        <div><div style="font-weight:500">${f.nome}</div><div style="font-size:11px;color:var(--text2)">${f.funcao||''}</div></div>
+      </div></td>
+      <td>${f.cargo?`<span class="tag">${f.cargo}</span>`:'—'}</td>
+      <td>${f.telefone||'—'}</td>
+      <td style="font-size:12px">${f.pix||'—'}</td>
+      <td style="font-size:12px">${f.favorecido||'—'}</td>
+      <td><span class="badge" style="background:${isInativo?'var(--surface2)':'var(--green-light)'};color:${isInativo?'var(--text3)':'var(--green)'}">${isInativo?'Inativo':'Ativo'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function limparFiltrosFunc(){
+  document.getElementById('search-func').value='';
+  document.getElementById('filter-func-cargo').value='';
+  document.getElementById('filter-func-status').value='';
+  renderFuncionarios();
+}
+
+function abrirFuncionario(id){
+  editFuncId=id||null;
+  const f=id?funcionarios.find(x=>x.id===id):{};
+  document.getElementById('mfn-titulo').textContent=id?'Editar funcionário':'Novo funcionário';
+  document.getElementById('mfn-excluir').style.display=id?'inline-flex':'none';
+  document.getElementById('mfn-nome').value=f.nome||'';
+  document.getElementById('mfn-cargo').value=f.cargo||'';
+  document.getElementById('mfn-funcao').value=f.funcao||'';
+  document.getElementById('mfn-telefone').value=f.telefone||'';
+  document.getElementById('mfn-cpf').value=f.cpf||'';
+  document.getElementById('mfn-nascimento').value=f.data_nascimento||'';
+  document.getElementById('mfn-admissao').value=f.data_admissao||'';
+  document.getElementById('mfn-tipo-sang').value=f.tipo_sanguineo||'';
+  document.getElementById('mfn-contato-nome').value=f.contato_emergencia_nome||'';
+  document.getElementById('mfn-contato-tel').value=f.contato_emergencia_tel||'';
+  document.getElementById('mfn-pix').value=f.pix||'';
+  document.getElementById('mfn-favorecido').value=f.favorecido||'';
+  document.getElementById('mfn-banco').value=f.banco||'';
+  document.getElementById('mfn-cep').value=f.cep||'';
+  document.getElementById('mfn-rua').value=f.rua||'';
+  document.getElementById('mfn-numero').value=f.numero||'';
+  document.getElementById('mfn-bairro').value=f.bairro||'';
+  document.getElementById('mfn-cidade').value=f.cidade||'';
+  document.getElementById('mfn-estado').value=f.estado||'';
+  document.getElementById('mfn-ativo').value=f.ativo||'ativo';
+  document.getElementById('modal-func').classList.add('open');
+}
+
+async function salvarFuncionario(abrirNovo=false){
+  const nome=document.getElementById('mfn-nome').value.trim();
+  if(!nome){alert('Preencha o nome.');return;}
+  const dados={
+    nome,
+    cargo:document.getElementById('mfn-cargo').value,
+    funcao:document.getElementById('mfn-funcao').value.trim(),
+    telefone:document.getElementById('mfn-telefone').value.trim(),
+    cpf:document.getElementById('mfn-cpf').value.trim(),
+    data_nascimento:document.getElementById('mfn-nascimento').value||null,
+    data_admissao:document.getElementById('mfn-admissao').value||null,
+    tipo_sanguineo:document.getElementById('mfn-tipo-sang').value,
+    contato_emergencia_nome:document.getElementById('mfn-contato-nome').value.trim(),
+    contato_emergencia_tel:document.getElementById('mfn-contato-tel').value.trim(),
+    pix:document.getElementById('mfn-pix').value.trim(),
+    favorecido:document.getElementById('mfn-favorecido').value.trim(),
+    banco:document.getElementById('mfn-banco').value.trim(),
+    cep:document.getElementById('mfn-cep').value.trim(),
+    rua:document.getElementById('mfn-rua').value.trim(),
+    numero:document.getElementById('mfn-numero').value.trim(),
+    bairro:document.getElementById('mfn-bairro').value.trim(),
+    cidade:document.getElementById('mfn-cidade').value.trim(),
+    estado:document.getElementById('mfn-estado').value,
+    ativo:document.getElementById('mfn-ativo').value,
+  };
+  setSyncStatus('loading');
+  try{
+    if(editFuncId){await sb.from('funcionarios').update(dados).eq('id',editFuncId);}
+    else{await sb.from('funcionarios').insert(dados);}
+    setSyncStatus('ok');
+    const{data}=await sb.from('funcionarios').select('*').order('nome');
+    funcionarios=data||[];renderFuncionarios();renderAniversariantes();
+    if(abrirNovo){abrirFuncionario();}else{fecharModal('modal-func');}
+  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+}
+
+async function excluirFuncionario(){
+  if(!editFuncId)return;
+  if(!confirm('Excluir este funcionário?'))return;
+  await sb.from('funcionarios').delete().eq('id',editFuncId);
+  setSyncStatus('ok');fecharModal('modal-func');
+  const{data}=await sb.from('funcionarios').select('*').order('nome');
+  funcionarios=data||[];renderFuncionarios();
+}
+
+function exportarFuncionariosCSV(){
+  const cab='Nome,Cargo,Função,CPF,Telefone,Tipo Sanguíneo,Contato Emergência,Tel Emergência,Pix,Banco,Cidade,Estado,Admissão,Status';
+  const linhas=funcionarios.map(f=>[
+    f.nome,f.cargo,f.funcao,f.cpf,f.telefone,f.tipo_sanguineo,
+    f.contato_emergencia_nome,f.contato_emergencia_tel,f.pix,f.banco,
+    f.cidade,f.estado,f.data_admissao,f.ativo||'ativo'
+  ].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const uri='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(cab+'\n'+linhas);
+  const a=document.createElement('a');a.href=uri;a.download='funcionarios.csv';a.click();
+}
+
+function exportarFuncionariosPDF(){
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Funcionários</title>
+  <style>body{font-family:sans-serif;margin:32px;font-size:12px;}h1{font-size:18px;margin-bottom:4px;}
+  .sub{color:#666;font-size:11px;margin-bottom:20px;}
+  table{width:100%;border-collapse:collapse;}th{text-align:left;font-size:10px;text-transform:uppercase;color:#666;padding:6px 8px;border-bottom:1px solid #ddd;}
+  td{padding:6px 8px;border-bottom:0.5px solid #eee;font-size:11px;}
+  .footer{margin-top:24px;font-size:10px;color:#aaa;border-top:0.5px solid #ddd;padding-top:8px;}</style></head><body>
+  <h1>Funcionários — Monaro Engenharia</h1>
+  <div class="sub">Gerado em ${new Date().toLocaleDateString('pt-BR')} — ${funcionarios.length} funcionário(s)</div>
+  <table><thead><tr><th>Nome</th><th>Cargo</th><th>Função</th><th>Telefone</th><th>Tipo Sang.</th><th>Contato Emerg.</th><th>Status</th></tr></thead>
+  <tbody>${funcionarios.map(f=>`<tr><td>${f.nome}</td><td>${f.cargo||'—'}</td><td>${f.funcao||'—'}</td><td>${f.telefone||'—'}</td><td>${f.tipo_sanguineo||'—'}</td><td>${f.contato_emergencia_nome||'—'} ${f.contato_emergencia_tel||''}</td><td>${f.ativo||'ativo'}</td></tr>`).join('')}</tbody></table>
+  <div class="footer">Monaro Engenharia — gestao.engenhariamonaro.com.br</div></body></html>`);
+  w.document.close();setTimeout(()=>w.print(),400);
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+function renderDashboard(){
+  // data atual
+  const hoje=new Date();
+  document.getElementById('dash-data').textContent=hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // contagens
+  const obrasAbertas=0; // será implementado com módulo obras
+  const pendencias=0;   // será implementado com módulo pendencias
+
+  // compromissos hoje e amanhã
+  const amanha=new Date(hoje);amanha.setDate(amanha.getDate()+1);
+  const fmtYMD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const hj=fmtYMD(hoje);const am=fmtYMD(amanha);
+  const compHoje=compromissos.filter(c=>c.data===hj&&(c.status||'pendente')==='pendente');
+  const compAmanha=compromissos.filter(c=>c.data===am&&(c.status||'pendente')==='pendente');
+  const totalComp=compHoje.length+compAmanha.length;
+
+  // cards clicáveis
+  const cards=[
+    {icon:'🏗',label:'Obras em aberto',value:obrasAbertas,color:'var(--orange)',onclick:"navToFiltro('obras','aberto')"},
+    {icon:'⚠',label:'Pendências',value:pendencias,color:'var(--red)',onclick:"navToFiltro('pendencias','')"},
+    {icon:'📌',label:'Compromissos hoje/amanhã',value:totalComp,color:'var(--blue)',onclick:"navToFiltro('compromissos','hoje')"},
+    {icon:'👷',label:'Funcionários ativos',value:funcionarios.filter(f=>(f.ativo||'ativo')==='ativo').length,color:'var(--green)',onclick:"navTo('funcionarios')"},
+    {icon:'🏢',label:'Clientes',value:clientes.length,color:'var(--purple)',onclick:"navTo('clientes')"},
+    {icon:'🤝',label:'Fornecedores',value:fornecedores.length,color:'var(--text2)',onclick:"navTo('fornecedores')"},
+  ];
+
+  document.getElementById('dash-cards').innerHTML=cards.map(c=>`
+    <div class="card" onclick="${c.onclick}" style="cursor:pointer;transition:box-shadow 0.15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
+      <div style="font-size:20px;margin-bottom:8px">${c.icon}</div>
+      <div class="card-label">${c.label}</div>
+      <div class="card-value" style="color:${c.value>0?c.color:'var(--text)'}">${c.value}</div>
+    </div>`).join('');
+
+  // compromissos no painel
+  const el=document.getElementById('dash-compromissos');
+  if(!compHoje.length&&!compAmanha.length){
+    el.innerHTML='<p style="color:var(--text3);font-size:13px">Nenhum compromisso para hoje ou amanhã.</p>';
+  } else {
+    const renderComp=(lista,titulo)=>lista.length?`
+      <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;margin-bottom:6px;margin-top:10px">${titulo}</div>
+      ${lista.map(c=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)">
+        <span style="font-size:16px;flex-shrink:0">${c.hora?'🕐':'📌'}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500">${c.descricao}</div>
+          ${c.hora?`<div style="font-size:11px;color:var(--text2)">${c.hora}${c.local?' — '+c.local:''}</div>`:''}
+        </div>
+        <button onclick="event.stopPropagation();concluirCompromisso('${c.id}')" style="font-size:10px;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border2);background:var(--surface2);cursor:pointer;white-space:nowrap">✓ Feito</button>
+      </div>`).join('')}`:''  ;
+    el.innerHTML=renderComp(compHoje,'Hoje')+renderComp(compAmanha,'Amanhã');
+  }
+
+  renderAniversariantes();
+}
+
+function navToFiltro(modulo, filtro){
+  navTo(modulo);
+  if(modulo==='compromissos'&&filtro==='hoje'){
+    document.getElementById('filter-comp-status').value='pendente';
+    renderCompromissos();
+  }
+}
+
+// ── COMPROMISSOS ──────────────────────────────────────────
+function renderCompromissos(){
+  const q=(document.getElementById('search-comp')?.value||'').toLowerCase();
+  const fs=document.getElementById('filter-comp-status')?.value||'';
+  const lista=compromissos.filter(c=>{
+    const matchQ=(c.descricao+(c.local||'')).toLowerCase().includes(q);
+    const matchS=!fs||(c.status||'pendente')===fs;
+    return matchQ&&matchS;
+  }).sort((a,b)=>{
+    if(!a.data&&!b.data)return 0;
+    if(!a.data)return 1;if(!b.data)return-1;
+    return a.data.localeCompare(b.data);
+  });
+
+  const el=document.getElementById('lista-compromissos');
+  if(!el)return;
+  if(!lista.length){el.innerHTML=`<div class="card" style="text-align:center;color:var(--text3);padding:3rem">Nenhum compromisso encontrado.</div>`;return;}
+
+  // group by date
+  const grupos={};
+  lista.forEach(c=>{
+    const key=c.data||'__sem_data__';
+    if(!grupos[key])grupos[key]=[];
+    grupos[key].push(c);
+  });
+
+  const hoje=new Date();const fmtYMD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const hj=fmtYMD(hoje);
+  const amD=new Date(hoje);amD.setDate(amD.getDate()+1);const am=fmtYMD(amD);
+
+  const labelData=d=>{
+    if(d==='__sem_data__')return'📌 Sem data (Lembretes)';
+    if(d===hj)return'📅 Hoje';if(d===am)return'📅 Amanhã';
+    return'📅 '+new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  };
+
+  el.innerHTML=Object.keys(grupos).sort((a,b)=>{
+    if(a==='__sem_data__')return 1;if(b==='__sem_data__')return-1;
+    return a.localeCompare(b);
+  }).map(key=>`
+    <div style="margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);padding:6px 0;border-bottom:0.5px solid var(--border);margin-bottom:6px">${labelData(key)}</div>
+      ${grupos[key].map(c=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;${(c.status||'pendente')==='concluido'?'opacity:0.5':''}">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:500;${(c.status||'pendente')==='concluido'?'text-decoration:line-through':''}">${c.descricao}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">
+              ${c.hora?`🕐 ${c.hora} `:''}${c.local?`📍 ${c.local}`:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            ${(c.status||'pendente')==='pendente'?`<button onclick="concluirCompromisso('${c.id}')" class="btn btn-sm" style="background:var(--green-light);color:var(--green);border-color:var(--green)">✓ Concluir</button>`:'<span style="font-size:11px;color:var(--green)">✓ Concluído</span>'}
+            <button onclick="abrirCompromisso('${c.id}')" class="btn btn-sm btn-ghost">Editar</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function limparFiltrosComp(){
+  document.getElementById('search-comp').value='';
+  document.getElementById('filter-comp-status').value='pendente';
+  renderCompromissos();
+}
+
+function abrirCompromisso(id){
+  editCompId=id||null;
+  const c=id?compromissos.find(x=>x.id===id):{};
+  document.getElementById('mcomp-titulo').textContent=id?'Editar compromisso':'Novo compromisso';
+  document.getElementById('mcomp-excluir').style.display=id?'inline-flex':'none';
+  document.getElementById('mcomp-desc').value=c.descricao||'';
+  document.getElementById('mcomp-data').value=c.data||'';
+  document.getElementById('mcomp-hora').value=c.hora||'';
+  document.getElementById('mcomp-local').value=c.local||'';
+  document.getElementById('mcomp-status').value=c.status||'pendente';
+  document.getElementById('modal-comp').classList.add('open');
+}
+
+async function salvarCompromisso(abrirNovo=false){
+  const descricao=document.getElementById('mcomp-desc').value.trim();
+  if(!descricao){alert('Preencha a descrição.');return;}
+  const dados={
+    descricao,
+    data:document.getElementById('mcomp-data').value||null,
+    hora:document.getElementById('mcomp-hora').value||null,
+    local:document.getElementById('mcomp-local').value.trim()||null,
+    status:document.getElementById('mcomp-status').value,
+  };
+  setSyncStatus('loading');
+  try{
+    if(editCompId){await sb.from('compromissos_agenda').update(dados).eq('id',editCompId);}
+    else{await sb.from('compromissos_agenda').insert(dados);}
+    setSyncStatus('ok');
+    const{data}=await sb.from('compromissos_agenda').select('*').order('data');
+    compromissos=data||[];renderCompromissos();renderDashboard();
+    if(abrirNovo){abrirCompromisso();}else{fecharModal('modal-comp');}
+  }catch(e){setSyncStatus('err');alert('Erro ao salvar.');}
+}
+
+async function excluirCompromisso(){
+  if(!editCompId)return;
+  if(!confirm('Excluir este compromisso?'))return;
+  await sb.from('compromissos_agenda').delete().eq('id',editCompId);
+  setSyncStatus('ok');fecharModal('modal-comp');
+  const{data}=await sb.from('compromissos_agenda').select('*').order('data');
+  compromissos=data||[];renderCompromissos();renderDashboard();
+}
+
+async function concluirCompromisso(id){
+  await sb.from('compromissos_agenda').update({status:'concluido'}).eq('id',id);
+  const{data}=await sb.from('compromissos_agenda').select('*').order('data');
+  compromissos=data||[];renderCompromissos();renderDashboard();
+}
 
 // ── MÁSCARAS ─────────────────────────────────────────────
 function aplicarMascara(input, tipo){
@@ -780,6 +1290,15 @@ function setupMascaras(){
   if(cep)cep.addEventListener('input',()=>aplicarMascara(cep,'cep'));
   if(tel)tel.addEventListener('input',()=>aplicarMascara(tel,'tel'));
   if(cpf)cpf.addEventListener('input',()=>aplicarMascara(cpf,'cpfcnpj'));
+  // Funcionário
+  const fntel=document.getElementById('mfn-telefone');
+  const fncpf=document.getElementById('mfn-cpf');
+  const fncep=document.getElementById('mfn-cep');
+  const fnct=document.getElementById('mfn-contato-tel');
+  if(fntel)fntel.addEventListener('input',()=>aplicarMascara(fntel,'tel'));
+  if(fncpf)fncpf.addEventListener('input',()=>aplicarMascara(fncpf,'cpfcnpj'));
+  if(fncep)fncep.addEventListener('input',()=>aplicarMascara(fncep,'cep'));
+  if(fnct)fnct.addEventListener('input',()=>aplicarMascara(fnct,'tel'));
   // Fornecedor
   const ft=document.getElementById('mf-telefone');
   const fc=document.getElementById('mf-cpfcnpj');
@@ -795,6 +1314,7 @@ function renderAniversariantes(){
   const aniv=[];
   clientes.forEach(c=>{if(c.data_nascimento){const[,m,d]=c.data_nascimento.split('-');if(d===dia&&m===mes)aniv.push({nome:c.contato||c.condominio,tipo:'Cliente'});}});
   fornecedores.forEach(f=>{if(f.data_nascimento){const[,m,d]=f.data_nascimento.split('-');if(d===dia&&m===mes)aniv.push({nome:f.nome,tipo:'Fornecedor'});}});
+  funcionarios.forEach(fn=>{if(fn.data_nascimento){const[,m,d]=fn.data_nascimento.split('-');if(d===dia&&m===mes)aniv.push({nome:fn.nome,tipo:'Funcionário'});}});
   const el=document.getElementById('dashboard-aniversariantes');
   if(!el)return;
   if(!aniv.length){el.innerHTML='<p style="color:var(--text3);font-size:13px">Nenhum aniversariante hoje.</p>';return;}
