@@ -1309,7 +1309,9 @@ function calcOrcItem(it,bdiPad,aliqPad){
   const vt=(it.quantidade||0)*(it.valor_unitario||0);
   const b=it.bdi!=null?it.bdi:bdiPad;
   const a=it.aliquota_nf!=null?it.aliquota_nf:aliqPad;
-  return{...it,_vt:vt,_bdi:b,_aliq:a,_venda:vt*(1+a)*(1+b)};
+  const nf=vt*a;
+  const bdiVal=vt*b;
+  return{...it,_vt:vt,_bdi:b,_aliq:a,_nf:nf,_bdiVal:bdiVal,_venda:vt+nf+bdiVal};
 }
 
 function renderAbaOrcamento(o){
@@ -1320,7 +1322,7 @@ function renderAbaOrcamento(o){
   const fases=[["Mão de Obra Própria"],["Mão de Obra Terceiro"],["Insumos Locação"],["Insumos Compras"],["Monaro Administrativo"]];
   const resumo=fases.map(([cat])=>{
     const g=linhas.filter(it=>it.categoria===cat);
-    return{label:cat,custo:g.reduce((a,it)=>a+it._vt,0),nf:g.reduce((a,it)=>a+it._vt*it._aliq,0),bdi:g.reduce((a,it)=>a+it._vt*it._bdi,0),venda:g.reduce((a,it)=>a+it._venda,0)};
+    return{label:cat,custo:g.reduce((a,it)=>a+it._vt,0),nf:g.reduce((a,it)=>a+(it._nf||0),0),bdi:g.reduce((a,it)=>a+(it._bdiVal||0),0),venda:g.reduce((a,it)=>a+it._venda,0)};
   });
   const totC=resumo.reduce((a,r)=>a+r.custo,0),totN=resumo.reduce((a,r)=>a+r.nf,0),totB=resumo.reduce((a,r)=>a+r.bdi,0),totV=resumo.reduce((a,r)=>a+r.venda,0);
   const margem=totV>0?totB/totV:0,tempo=o.tempo_execucao||1;
@@ -1794,7 +1796,7 @@ function exportarOrcamentoPDF(obraId){
   const itens=orcamentoItens.filter(it=>it.obra_id===obraId);
   const bdi=o.bdi_padrao||0.6,aliq=o.aliquota_padrao||0.12;
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orçamento ${o.nome}</title><style>body{font-family:sans-serif;margin:32px;font-size:11px;}h1{font-size:16px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th{font-size:10px;text-transform:uppercase;color:#666;padding:5px 6px;border-bottom:1px solid #ddd;text-align:left;}td{padding:5px 6px;border-bottom:0.5px solid #eee;}.footer{margin-top:24px;font-size:10px;color:#aaa;border-top:0.5px solid #ddd;padding-top:8px;}</style></head><body><h1>Planilha Orçamentária — ${o.nome}</h1><table><thead><tr><th>#</th><th>Categoria</th><th>Serviço</th><th>Unid</th><th>Qtde</th><th>Vlr unit</th><th>Vlr total</th><th>Alíq%</th><th>BDI%</th><th>Vl venda</th></tr></thead><tbody>${itens.map((it,i)=>{const vt=(it.quantidade||0)*(it.valor_unitario||0);const b=it.bdi!=null?it.bdi:bdi;const a=it.aliquota_nf!=null?it.aliquota_nf:aliq;return`<tr><td>${it.item||i+1}</td><td>${it.categoria||''}</td><td>${it.servico||''}</td><td>${it.unidade||''}</td><td>${it.quantidade||''}</td><td>R$ ${Number(it.valor_unitario||0).toFixed(2)}</td><td>R$ ${vt.toFixed(2)}</td><td>${Math.round(a*100)}%</td><td>${Math.round(b*100)}%</td><td>R$ ${(vt*(1+a)*(1+b)).toFixed(2)}</td></tr>`;}).join('')}</tbody></table><div class="footer">Monaro Engenharia</div></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orçamento ${o.nome}</title><style>body{font-family:sans-serif;margin:32px;font-size:11px;}h1{font-size:16px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th{font-size:10px;text-transform:uppercase;color:#666;padding:5px 6px;border-bottom:1px solid #ddd;text-align:left;}td{padding:5px 6px;border-bottom:0.5px solid #eee;}.footer{margin-top:24px;font-size:10px;color:#aaa;border-top:0.5px solid #ddd;padding-top:8px;}</style></head><body><h1>Planilha Orçamentária — ${o.nome}</h1><table><thead><tr><th>#</th><th>Categoria</th><th>Serviço</th><th>Unid</th><th>Qtde</th><th>Vlr unit</th><th>Vlr total</th><th>Alíq%</th><th>BDI%</th><th>Vl venda</th></tr></thead><tbody>${itens.map((it,i)=>{const vt=(it.quantidade||0)*(it.valor_unitario||0);const b=it.bdi!=null?it.bdi:bdi;const a=it.aliquota_nf!=null?it.aliquota_nf:aliq;const venda=vt+vt*a+vt*b;return`<tr><td>${it.item||i+1}</td><td>${it.categoria||''}</td><td>${it.servico||''}</td><td>${it.unidade||''}</td><td>${it.quantidade||''}</td><td>R$ ${Number(it.valor_unitario||0).toFixed(2)}</td><td>R$ ${vt.toFixed(2)}</td><td>${Math.round(a*100)}%</td><td>${Math.round(b*100)}%</td><td>R$ ${venda.toFixed(2)}</td></tr>`;}).join('')}</tbody></table><div class="footer">Monaro Engenharia</div></body></html>`);
   w.document.close();setTimeout(()=>w.print(),400);
 }
 function exportarResumoPDF(obraId){
