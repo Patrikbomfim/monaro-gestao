@@ -1727,7 +1727,6 @@ function renderAbaGantt(o){
   setTimeout(()=>{const sc=el.querySelector('div[style*="overflow:auto"]');if(sc)sc.scrollLeft=Math.max(0,(ti-5)*DW);},50);
 }
 
-let editItemObraId=null;
 function abrirModalItemObra(obraId,tipo){
   editItemObraId=null;
   document.getElementById('mio-obra-id').value=obraId;
