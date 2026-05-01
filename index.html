@@ -1347,7 +1347,7 @@ function renderAbaOrcamento(o){
         return`<tr style="${borderTop}">
         <td style="padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:center;color:var(--text2)">${it.item||i+1}</td>
         <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)">
-          <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px;color:${{{'Mão de Obra Própria':'#E85D26','Mão de Obra Terceiro':'#534AB7','Insumos Locação':'#854F0B','Insumos Compras':'#185FA5','Monaro Administrativo':'#3B6D11'}[it.categoria]||'inherit'}}">
+          <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px">
             ${CATS_ORC.map(c=>`<option value="${c}" ${it.categoria===c?'selected':''}>${c}</option>`).join('')}
           </select>
         </td>
