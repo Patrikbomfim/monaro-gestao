@@ -1675,27 +1675,23 @@ async function gerarColunasCron(obraId){
     const{data:freshCols}=await sb.from('cronograma_colunas').select('*').eq('obra_id',obraId);
     const{data:freshVals}=await sb.from('cronograma_valores').select('*').eq('obra_id',obraId);
     
-    // Find cols with no values (safe to delete)
-    const colsWithValues=new Set((freshVals||[]).filter(v=>v.valor&&v.valor!==0).map(v=>v.coluna_id));
+    // Find cols WITH values (cannot delete)
+    const colsWithValues=new Set((freshVals||[]).filter(v=>v.valor&&Number(v.valor)!==0).map(v=>v.coluna_id));
     
-    // Delete empty cols that aren't in the new range
-    const newMeses=new Set();
-    let ty=iy,tm=im;
-    while(ty<fy||(ty===fy&&tm<=fm)){newMeses.add(tm+'-'+ty);tm++;if(tm>12){tm=1;ty++;}}
-    
+    // Delete ALL empty cols (regardless of range)
     for(const col of (freshCols||[])){
-      const key=col.mes+'-'+col.ano;
-      if(!newMeses.has(key)&&!colsWithValues.has(col.id)){
-        // Remove empty col not in new range
+      if(!colsWithValues.has(col.id)){
+        await sb.from('cronograma_valores').delete().eq('coluna_id',col.id);
         await sb.from('cronograma_colunas').delete().eq('id',col.id);
       }
     }
     
-    // Fetch again after deletions
+    // Fetch again after deletions to get remaining (only those with values)
     const{data:remainCols}=await sb.from('cronograma_colunas').select('*').eq('obra_id',obraId);
     const existingMeses=new Set((remainCols||[]).map(c=>c.mes+'-'+c.ano));
     let ordem=(remainCols||[]).length;
     
+    // Create new cols for the full selected range
     let y=iy,m=im;
     while(y<fy||(y===fy&&m<=fm)){
       const key=m+'-'+y;
