@@ -1362,7 +1362,7 @@ function renderAbaOrcamento(o){
       </td>
       <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
       <td style="padding:3px 4px;border:0.5px solid var(--border2);width:55px"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
-      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:90px"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:90px"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onfocus="this.select()" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right;cursor:text;caret-color:var(--orange)" /></td>
       <td style="padding:3px 4px;border:0.5px solid var(--border2);width:100px">
         <input type="text" inputmode="decimal"
           value="${it.valor_unitario?Number(it.valor_unitario).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
@@ -1583,10 +1583,14 @@ function renderAbaCronograma(o){
           <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right;color:var(--green)">${fmtMoeda(0)}</td>
           <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right;${it._diff?'background:var(--amber-light);color:var(--amber)':''}">${fmtMoeda(it._saldo)}${it._diff?' ⚠':''}</td>
           ${cols.map((col,ci)=>`<td style="padding:3px 4px;border:0.5px solid var(--border2)">
-            <input type="text" inputmode="decimal" value="${it._vals[ci]?it._vals[ci].toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
-              onfocus="this.value='${it._vals[ci]||''}'"
-              onblur="atualizarCronValor('${it.id}','${col.id}','${o.id}',this.value.replace(',','.'))"
-              style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+            <input type="text" inputmode="decimal" 
+              value="${it._vals[ci]?it._vals[ci].toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
+              data-raw="${it._vals[ci]||0}"
+              data-item="${it.id}" data-col="${col.id}" data-obra="${o.id}"
+              onfocus="this.value=this.dataset.raw==0?'':this.dataset.raw;this.select()"
+              onblur="salvarCronInput(this)"
+              onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();salvarCronInput(this);const inputs=[...document.querySelectorAll('#obra-content-cronograma input[data-col]')];const idx=inputs.indexOf(this);if(inputs[idx+1])inputs[idx+1].focus();}"
+              style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right;cursor:text;caret-color:var(--orange)" />
           </td>`).join('')}
         </tr>`;
         return acc;
@@ -1645,6 +1649,14 @@ function renderCronControls(obraId){
       style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:8px;background:var(--surface);width:64px" />
     <button class="btn btn-sm btn-primary" onclick="gerarColunasCron('${obraId}')">Gerar colunas</button>
     <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${obraId}')" style="color:var(--red)">Limpar tudo</button>`;
+}
+
+async function salvarCronInput(el){
+  const val=el.value.replace(/\./g,'').replace(',','.');
+  const num=parseFloat(val)||0;
+  el.dataset.raw=num;
+  el.value=num?num.toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
+  await atualizarCronValor(el.dataset.item,el.dataset.col,el.dataset.obra,num);
 }
 
 async function recarregarCronograma(obraId){
