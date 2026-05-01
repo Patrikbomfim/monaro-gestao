@@ -2082,6 +2082,44 @@ function renderAniversariantes(){
   </div>`).join('');
 }
 
+async function limparPlanilha(obraId){
+  if(!confirm('Atenção! Isso irá excluir TODAS as linhas da planilha desta obra. Deseja continuar?'))return;
+  setSyncStatus('loading');
+  try{
+    const{error}=await sb.from('orcamento_itens').delete().eq('obra_id',obraId);
+    if(error)throw error;
+    orcamentoItens=orcamentoItens.filter(it=>it.obra_id!==obraId);
+    setSyncStatus('ok');
+    await recarregarObras();
+  }catch(e){setSyncStatus('err');alert('Erro: '+(e.message||JSON.stringify(e)));}
+}
+
+async function atualizarBdiObra(obraId,val){
+  const v=(parseFloat(String(val).replace(',','.'))||60)/100;
+  const{error}=await sb.from('obras').update({bdi_padrao:v}).eq('id',obraId);
+  if(error){alert('Erro BDI: '+error.message);return;}
+  const o=obras.find(x=>x.id===obraId);
+  if(o)o.bdi_padrao=v;
+  await recarregarObras();
+}
+
+async function atualizarAliqObra(obraId,val){
+  const v=(parseFloat(String(val).replace(',','.'))||12)/100;
+  const{error}=await sb.from('obras').update({aliquota_padrao:v}).eq('id',obraId);
+  if(error){alert('Erro Alíq: '+error.message);return;}
+  const o=obras.find(x=>x.id===obraId);
+  if(o)o.aliquota_padrao=v;
+  await recarregarObras();
+}
+
+async function atualizarTempoObra(obraId,val){
+  const v=parseInt(val)||null;
+  await sb.from('obras').update({tempo_execucao:v}).eq('id',obraId);
+  const o=obras.find(x=>x.id===obraId);
+  if(o)o.tempo_execucao=v;
+  await recarregarObras();
+}
+
 iniciar();
 setupMascaras();
 if(typeof lucide !== 'undefined'){lucide.createIcons();}
