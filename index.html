@@ -1123,7 +1123,7 @@ function renderObrasKanban(){
       return`<div class="kanban-card" onclick="abrirObra('${o.id}')" style="cursor:pointer">
         <div class="kanban-card-name">${o.nome}</div>
         ${cliente?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${cliente.condominio}</div>`:''}
-        <div style="font-size:11px;color:var(--text3);margin-top:3px">${dias} dia${dias!==1?'s':''} em aberto</div>
+        ${key==='aberto'?`<div style="font-size:11px;color:var(--amber);margin-top:3px">${dias} dia${dias!==1?'s':''} aguardando orçamento</div>`:''}
         ${nProp>0?`<div style="font-size:11px;color:var(--red);margin-top:2px">⚠ ${nProp} serviço${nProp>1?'s':''} sem agenda</div>`:''}
         ${nCompras>0?`<div style="font-size:11px;color:var(--amber);margin-top:2px">🛒 ${nCompras} compra${nCompras>1?'s':''} pendente${nCompras>1?'s':''}</div>`:''}
         ${nDoc>0?`<div style="font-size:11px;color:var(--text2);margin-top:2px">📄 ${nDoc} doc${nDoc>1?'s':''} pendente${nDoc>1?'s':''}</div>`:''}
@@ -1314,10 +1314,14 @@ function renderAbaOrcamento(o){
   const margem=totV>0?totB/totV:0,tempo=o.tempo_execucao||1;
 
   document.getElementById('obra-content-orcamento').innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="display:flex;gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm btn-primary" onclick="adicionarLinhaOrc('${o.id}')">+ Linha</button>
         <button class="btn btn-sm" onclick="exportarOrcamentoPDF('${o.id}')">⬇ PDF</button>
+        <div style="width:1px;background:var(--border);margin:0 4px"></div>
+        <span style="font-size:11px;color:var(--text2);align-self:center">Templates:</span>
+        <button class="btn btn-sm" style="background:var(--purple-light);color:var(--purple);border-color:var(--purple);font-size:11px" onclick="carregarTemplate('${o.id}','PINTURA E LAVAGEM PREDIAL')">Pintura e Lavagem</button>
+        <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue);font-size:11px" onclick="carregarTemplate('${o.id}','MANUTENÇÃO DE PASTILHAS')">Manutenção Pastilhas</button>
       </div>
       <div style="font-size:12px;color:var(--text2)">BDI padrão: ${Math.round(bdi*100)}% &nbsp;|&nbsp; Alíquota NF: ${Math.round(aliq*100)}%</div>
     </div>
@@ -1337,10 +1341,13 @@ function renderAbaOrcamento(o){
         <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:30px"></th>
       </tr></thead>
       <tbody>
-      ${linhas.map((it,i)=>`<tr>
+      ${linhas.map((it,i)=>{
+        const prevCat=i>0?linhas[i-1].categoria:'';
+        const borderTop=it.categoria&&it.categoria!==prevCat&&i>0?'border-top:2px solid var(--border2);':'';
+        return`<tr style="${borderTop}">
         <td style="padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:center;color:var(--text2)">${it.item||i+1}</td>
         <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)">
-          <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px">
+          <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px;color:${{{'Mão de Obra Própria':'#E85D26','Mão de Obra Terceiro':'#534AB7','Insumos Locação':'#854F0B','Insumos Compras':'#185FA5','Monaro Administrativo':'#3B6D11'}[it.categoria]||'inherit'}}">
             ${CATS_ORC.map(c=>`<option value="${c}" ${it.categoria===c?'selected':''}>${c}</option>`).join('')}
           </select>
         </td>
@@ -1353,7 +1360,7 @@ function renderAbaOrcamento(o){
         <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input type="number" value="${it.bdi!=null?Math.round(it.bdi*100):Math.round(bdi*100)}" onblur="atualizarItemOrcPct('${it.id}','bdi',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
         <td style="padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--green);font-weight:500">${it._venda?'R$ '+it._venda.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
         <td style="padding:3px;border-bottom:0.5px solid var(--border);text-align:center"><button onclick="excluirItemOrc('${it.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px">✕</button></td>
-      </tr>`).join('')}
+      </tr>`;}).join('')}
       ${!linhas.length?'<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text3)">Clique em + Linha para começar</td></tr>':''}
       </tbody>
     </table></div>
@@ -1676,6 +1683,28 @@ function exportarObrasPDF(){
   w.document.close();setTimeout(()=>w.print(),400);
 }
 
+
+// ── TEMPLATES ORÇAMENTO ──────────────────────────────────
+const ORC_TEMPLATES={"PINTURA E LAVAGEM PREDIAL": [["Mão de Obra Própria", "Pintura fachadas", "m2"], ["Mão de Obra Própria", "Pintura área comum", "m2"], ["Mão de Obra Própria", "Pintura hall apartamentos", "m2"], ["Mão de Obra Própria", "Pintura hall escadaria", "m2"], ["Mão de Obra Própria", "Pintura estacionamento", "m2"], ["Mão de Obra Própria", "Mão de obra geral", "vb"], ["Mão de Obra Terceiro", "Eletricista", "vb"], ["Mão de Obra Terceiro", "Encanador", "vb"], ["Insumos Locação", "Caçamba de entulho", "und"], ["Insumos Locação", "Andaime", "vb"], ["Insumos Compras", "Detelim 5L", "und"], ["Insumos Compras", "Facilite 5L", "und"], ["Insumos Compras", "Detergente 5L", "und"], ["Insumos Compras", "Rolo pintura comum", "und"], ["Insumos Compras", "Suporte rolo comum", "und"], ["Insumos Compras", "Rolo textura", "und"], ["Insumos Compras", "Suporte rolo textura", "und"], ["Insumos Compras", "Pincel", "und"], ["Insumos Compras", "Materiais gerais", "vb"], ["Monaro Administrativo", "Seguro de obra", "vb"], ["Monaro Administrativo", "Emissão de ART", "vb"], ["Monaro Administrativo", "Administração de obra", "mês"], ["Monaro Administrativo", "Placa de obra", "vb"], ["Monaro Administrativo", "Custos administrativos", "vb"]], "MANUTENÇÃO DE PASTILHAS": [["Mão de Obra Própria", "Manutenção de fachadas", "m2"], ["Mão de Obra Própria", "Lavagem de fachadas", "m2"], ["Mão de Obra Própria", "Mão de obra geral", "vb"], ["Mão de Obra Terceiro", "Eletricista", "vb"], ["Mão de Obra Terceiro", "Encanador", "vb"], ["Insumos Locação", "Caçamba de entulho", "und"], ["Insumos Locação", "Andaime", "vb"], ["Insumos Compras", "Disco de corte", "und"], ["Insumos Compras", "Disco de desbaste", "und"], ["Insumos Compras", "Argamassa colante", "und"], ["Insumos Compras", "Rejunte flexível", "und"], ["Insumos Compras", "Fita larga azul", "und"], ["Insumos Compras", "Fita larga branca", "und"], ["Insumos Compras", "Materiais gerais", "vb"], ["Monaro Administrativo", "Seguro de obra", "vb"], ["Monaro Administrativo", "Emissão de ART", "vb"], ["Monaro Administrativo", "Administração de obra", "mês"], ["Monaro Administrativo", "Placa de obra", "vb"], ["Monaro Administrativo", "Custos administrativos", "vb"]]};
+
+async function carregarTemplate(obraId, nomeTemplate){
+  if(!confirm(`Carregar template "${nomeTemplate}"? Isso vai adicionar as linhas padrão ao orçamento atual.`))return;
+  const linhas=ORC_TEMPLATES[nomeTemplate];
+  if(!linhas)return;
+  const existentes=orcamentoItens.filter(it=>it.obra_id===obraId).length;
+  setSyncStatus('loading');
+  try{
+    for(let i=0;i<linhas.length;i++){
+      const[cat,serv,unid]=linhas[i];
+      await sb.from('orcamento_itens').insert({
+        obra_id:obraId,item:existentes+i+1,
+        categoria:cat,servico:serv,unidade:unid,
+        quantidade:0,valor_unitario:0,aliquota_nf:null,bdi:null
+      });
+    }
+    setSyncStatus('ok');await recarregarObras();
+  }catch(e){setSyncStatus('err');alert('Erro ao carregar template.');}
+}
 // ── DASHBOARD ────────────────────────────────────────────
 function renderDashboard(){
   // data atual
