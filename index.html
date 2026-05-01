@@ -24,6 +24,15 @@
 html,body{height:100%;overflow:hidden;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
 
+/* ── GLOBAL INPUT BEHAVIOR ── */
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=email],input[type=password],textarea{
+  caret-color:var(--orange);
+}
+input:focus,textarea:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(232,93,38,0.15);
+}
+
 /* ── LAYOUT ── */
 .app{display:flex;height:100%;}
 .sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--text);display:flex;flex-direction:column;flex-shrink:0;transition:width 0.2s ease;}
@@ -1362,7 +1371,7 @@ function renderAbaOrcamento(o){
       </td>
       <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
       <td style="padding:3px 4px;border:0.5px solid var(--border2);width:55px"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
-      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:90px"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onfocus="this.select()" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right;cursor:text;caret-color:var(--orange)" /></td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:90px"><input type="text" inputmode="decimal" value="${it.quantidade||''}"  onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right;cursor:text;caret-color:var(--orange)" /></td>
       <td style="padding:3px 4px;border:0.5px solid var(--border2);width:100px">
         <input type="text" inputmode="decimal"
           value="${it.valor_unitario?Number(it.valor_unitario).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
@@ -1587,7 +1596,7 @@ function renderAbaCronograma(o){
               value="${it._vals[ci]?it._vals[ci].toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
               data-raw="${it._vals[ci]||0}"
               data-item="${it.id}" data-col="${col.id}" data-obra="${o.id}"
-              onfocus="this.value=this.dataset.raw==0?'':this.dataset.raw;this.select()"
+              onfocus="this.value=parseFloat(this.dataset.raw)||0?String(parseFloat(this.dataset.raw)).replace('.',','):''"
               onblur="salvarCronInput(this)"
               onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();salvarCronInput(this);const inputs=[...document.querySelectorAll('#obra-content-cronograma input[data-col]')];const idx=inputs.indexOf(this);if(inputs[idx+1])inputs[idx+1].focus();}"
               style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right;cursor:text;caret-color:var(--orange)" />
@@ -1651,11 +1660,35 @@ function renderCronControls(obraId){
     <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${obraId}')" style="color:var(--red)">Limpar tudo</button>`;
 }
 
+function cronInputKeydown(e,el){
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();
+    salvarCronInput(el);
+    const inputs=[...document.querySelectorAll('#obra-content-cronograma input[data-col]')];
+    const idx=inputs.indexOf(el);
+    const next=e.shiftKey?inputs[idx-1]:inputs[idx+1];
+    if(next)next.focus();
+  }
+}
+
+// Global tab handler for orcamento table
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Tab')return;
+  const t=e.target;
+  if(!t.closest('#obra-content-orcamento')&&!t.closest('#obra-content-resumo'))return;
+  const inputs=[...document.querySelectorAll('#obra-content-orcamento input:not([type=hidden]), #obra-content-orcamento select')];
+  const idx=inputs.indexOf(t);
+  if(idx===-1)return;
+  e.preventDefault();
+  const next=e.shiftKey?inputs[idx-1]:inputs[idx+1];
+  if(next){next.focus();if(next.tagName==='INPUT')next.setSelectionRange(next.value.length,next.value.length);}
+});
+
 async function salvarCronInput(el){
   const val=el.value.replace(/\./g,'').replace(',','.');
   const num=parseFloat(val)||0;
   el.dataset.raw=num;
-  el.value=num?num.toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
+  el.value=num>0?num.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'';
   await atualizarCronValor(el.dataset.item,el.dataset.col,el.dataset.obra,num);
 }
 
