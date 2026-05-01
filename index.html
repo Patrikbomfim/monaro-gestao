@@ -1214,6 +1214,9 @@ async function salvarObra(abrirNovo=false){
     setSyncStatus('ok');
     fecharModal('modal-obra');
     await recarregarObras();
+    // Sync pendencias if status is approved+
+    const obraIdToSync=editObraId||(obras[obras.length-1]?.id);
+    if(obraIdToSync&&STATUS_APROVADOS.includes(dados.status))await sincronizarPendencias(obraIdToSync);
     if(abrirNovo){abrirModalObra();}
   }catch(e){setSyncStatus('err');console.error('Erro salvarObra:',e);alert('Erro ao salvar: '+(e.message||e));} 
 }
@@ -1457,17 +1460,31 @@ async function adicionarLinhaOrc(obraId){
     const{error}=await sb.from('orcamento_itens').insert({obra_id:obraId,item:n+1,categoria:CATS_ORC[0],servico:'',unidade:'',quantidade:0,valor_unitario:0,aliquota_nf:null,bdi:null});
     if(error)throw error;
     setSyncStatus('ok');await recarregarObras();
+    await sincronizarPendencias(obraId);
   }catch(e){setSyncStatus('err');console.error(e);alert('Erro ao adicionar linha: '+(e.message||e));}
 }
-async function atualizarItemOrc(id,campo,valor){await sb.from('orcamento_itens').update({[campo]:valor}).eq('id',id);await recarregarObras();}
+async function atualizarItemOrc(id,campo,valor){
+  await sb.from('orcamento_itens').update({[campo]:valor}).eq('id',id);
+  await recarregarObras();
+  // Sync if obra is approved+
+  const it=orcamentoItens.find(x=>x.id===id);
+  if(it)await sincronizarPendencias(it.obra_id);
+}
 async function atualizarItemOrcNum(id,campo,valor){await sb.from('orcamento_itens').update({[campo]:parseFloat(valor)||0}).eq('id',id);await recarregarObras();}
 async function atualizarItemOrcPct(id,campo,valor){await sb.from('orcamento_itens').update({[campo]:(parseFloat(valor)||0)/100}).eq('id',id);await recarregarObras();}
 async function excluirItemOrc(id){if(!confirm('Excluir esta linha?'))return;await sb.from('orcamento_itens').delete().eq('id',id);await recarregarObras();}
 
 function renderAbaResumo(o){
   const itens=orcamentoItens.filter(it=>it.obra_id===o.id);
-  const linhas=itens.map(it=>{const vt=(it.quantidade||0)*(it.valor_unitario||0);return{...it,_vt:vt,_pago:0,_saldo:vt};});
+  const bdi=o.bdi_padrao||0.6,aliq=o.aliquota_padrao||0.12;
+  const linhas=itens.map(it=>{
+    const vt=(it.quantidade||0)*(it.valor_unitario||0);
+    const b=it.bdi!=null?it.bdi:bdi;
+    const a=it.aliquota_nf!=null?it.aliquota_nf:aliq;
+    return{...it,_vt:vt,_nf:vt*a,_pago:0,_saldo:vt};
+  });
   const totVt=linhas.reduce((a,it)=>a+it._vt,0);
+  const totNF=linhas.reduce((a,it)=>a+(it._nf||0),0);
   document.getElementById('obra-content-resumo').innerHTML=`
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
       <button class="btn btn-sm" onclick="exportarResumoPDF('${o.id}')">⬇ PDF encarregado</button>
@@ -1494,10 +1511,10 @@ function renderAbaResumo(o){
         <td>Nota Fiscal</td>
         <td style="text-align:center">vb</td>
         <td style="text-align:right">1</td>
-        <td style="text-align:right">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
-        <td style="text-align:right;font-weight:500">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
+        <td style="text-align:right">${fmtMoeda(totNF)}</td>
+        <td style="text-align:right;font-weight:500">${fmtMoeda(totNF)}</td>
         <td style="text-align:right;color:var(--green)">${fmtMoeda(0)}</td>
-        <td style="text-align:right">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
+        <td style="text-align:right">${fmtMoeda(totNF)}</td>
       </tr>
       <tr style="background:var(--bg);font-weight:600">
         <td colspan="5"></td><td>Total</td>
@@ -1520,24 +1537,11 @@ function renderAbaCronograma(o){
     return{...it,_vt:vt,_saldo:vt,_vals:vals,_diff:Math.abs(vt-soma)>0.01};
   });
   const totVt=linhas.reduce((a,it)=>a+it._vt,0);
+  const bdiCron=o.bdi_padrao||0.6,aliqCron=o.aliquota_padrao||0.12;
+  const totNF=itens.reduce((a,it)=>{const vt=(it.quantidade||0)*(it.valor_unitario||0);const a2=it.aliquota_nf!=null?it.aliquota_nf:aliqCron;return a+vt*a2;},0);
   const totCols=cols.map((_,ci)=>linhas.reduce((a,l)=>a+(l._vals[ci]||0),0));
   document.getElementById('obra-content-cronograma').innerHTML=`
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <span style="font-size:12px;color:var(--text2);font-weight:500">De:</span>
-      <select id="cron-mes-ini-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
-        ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
-      </select>
-      <input type="text" inputmode="numeric" id="cron-ano-ini-${o.id}" placeholder="${new Date().getFullYear()}" value="${new Date().getFullYear()}"
-        style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);width:64px" />
-      <span style="font-size:12px;color:var(--text2)">até:</span>
-      <select id="cron-mes-fim-${o.id}" style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
-        ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
-      </select>
-      <input type="text" inputmode="numeric" id="cron-ano-fim-${o.id}" placeholder="${new Date().getFullYear()}" value="${new Date().getFullYear()}"
-        style="font-family:inherit;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);width:64px" />
-      <button class="btn btn-sm btn-primary" onclick="gerarColunasCron('${o.id}')">Gerar colunas</button>
-      <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${o.id}')" style="color:var(--red)">Limpar tudo</button>
-    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap" id="cron-ctrl-${o.id}"></div>
     <div style="overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)">
     <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:${500+cols.length*100}px">
       <thead><tr style="background:var(--bg)">
@@ -1576,9 +1580,9 @@ function renderAbaCronograma(o){
       <tr><td colspan="${4+cols.length}" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">Monaro Administrativo</td></tr>
       <tr>
         <td style="padding:6px 8px;border:0.5px solid var(--border2)">Nota Fiscal</td>
-        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
+        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(totNF)}</td>
         <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right;color:var(--green)">${fmtMoeda(0)}</td>
-        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(totVt*(o.aliquota_padrao||0))}</td>
+        <td style="padding:6px 8px;border:0.5px solid var(--border2);text-align:right">${fmtMoeda(totNF)}</td>
         ${cols.map(col=>`<td style="padding:3px 4px;border:0.5px solid var(--border2)">
           <input type="text" inputmode="decimal" placeholder="0,00"
             style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
@@ -1599,6 +1603,28 @@ async function adicionarColunaCron(obraId){
   await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:h.getMonth()+1,ano:h.getFullYear(),ordem:cols.length+1});
   await recarregarObras(true);
 }
+function renderCronControls(obraId){
+  const el=document.getElementById('cron-ctrl-'+obraId);
+  if(!el)return;
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const ano=new Date().getFullYear();
+  el.innerHTML=`
+    <span style="font-size:12px;color:var(--text2);font-weight:500">De:</span>
+    <select id="cron-mes-ini-${obraId}" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:8px;background:var(--surface)">
+      ${meses.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+    </select>
+    <input type="text" inputmode="numeric" id="cron-ano-ini-${obraId}" value="${ano}"
+      style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:8px;background:var(--surface);width:64px" />
+    <span style="font-size:12px;color:var(--text2)">até:</span>
+    <select id="cron-mes-fim-${obraId}" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:8px;background:var(--surface)">
+      ${meses.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+    </select>
+    <input type="text" inputmode="numeric" id="cron-ano-fim-${obraId}" value="${ano}"
+      style="font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 8px;border:0.5px solid var(--border2);border-radius:8px;background:var(--surface);width:64px" />
+    <button class="btn btn-sm btn-primary" onclick="gerarColunasCron('${obraId}')">Gerar colunas</button>
+    <button class="btn btn-sm btn-ghost" onclick="limparColunasCron('${obraId}')" style="color:var(--red)">Limpar tudo</button>`;
+}
+
 async function gerarColunasCron(obraId){
   const mesIniEl=document.getElementById('cron-mes-ini-'+obraId);
   const anoIniEl=document.getElementById('cron-ano-ini-'+obraId);
@@ -1841,6 +1867,7 @@ async function carregarTemplate(obraId, nomeTemplate){
       });
     }
     setSyncStatus('ok');await recarregarObras();
+    await sincronizarPendencias(obraId);
   }catch(e){setSyncStatus('err');alert('Erro ao carregar template.');}
 }
 // ── DASHBOARD ────────────────────────────────────────────
@@ -2091,6 +2118,62 @@ function renderAniversariantes(){
     <span style="font-size:20px">🎂</span>
     <div><div style="font-size:13px;font-weight:500">${a.nome}</div><div style="font-size:11px;color:var(--text2)">${a.tipo}</div></div>
   </div>`).join('');
+}
+
+
+// ── SINCRONIZAÇÃO ORÇAMENTO → PENDÊNCIAS ─────────────────
+const STATUS_APROVADOS=['aprovado','executando','manutencao','finalizado'];
+
+async function sincronizarPendencias(obraId){
+  const o=obras.find(x=>x.id===obraId);
+  if(!o||!STATUS_APROVADOS.includes(o.status))return; // só sincroniza se aprovado+
+
+  const itensOrc=orcamentoItens.filter(it=>it.obra_id===obraId);
+  const itensPend=itensObra.filter(it=>it.obra_id===obraId&&it.orcamento_item_id);
+
+  for(const orc of itensOrc){
+    const tipo=catToTipo(orc.categoria);
+    if(!tipo)continue; // Monaro Administrativo e Insumos Locação não viram pendência... 
+    // Actually Insumos Locação vira compra
+    
+    // Check if already has a pendencia linked to this orc item
+    const existing=itensPend.find(it=>it.orcamento_item_id===orc.id);
+    if(!existing){
+      // Create new pendencia
+      const dados={
+        obra_id:obraId,
+        orcamento_item_id:orc.id,
+        tipo,
+        nome:orc.servico||orc.categoria,
+        status:tipo==='compra'?'a-comprar':'sem-agenda',
+        funcs:[],
+        terceiro:null,
+        inicio:null,
+        fim:null,
+      };
+      await sb.from('itens_obra').insert(dados).catch(e=>console.error('sync insert err',e));
+    } else {
+      // Update nome if orçamento changed and pendencia wasn't manually renamed
+      // Only update if nome matches original orc servico (not manually edited)
+      if(existing.nome===orc.servico||!existing.nome){
+        // nome matches - update if orc changed
+      }
+      // Don't touch manually edited pendencias
+    }
+  }
+}
+
+function catToTipo(categoria){
+  if(categoria==='Mão de Obra Própria')return'proprio';
+  if(categoria==='Mão de Obra Terceiro')return'terceirizado';
+  if(categoria==='Insumos Compras')return'compra';
+  if(categoria==='Insumos Locação')return'compra';
+  return null; // Monaro Administrativo - não vira pendência
+}
+
+async function sincronizarAoAprovar(obraId){
+  // Called when status changes to aprovado or beyond
+  await sincronizarPendencias(obraId);
 }
 
 async function limparPlanilha(obraId){
