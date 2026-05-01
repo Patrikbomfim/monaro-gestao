@@ -1251,7 +1251,15 @@ async function recarregarObras(loadCron=false){
   renderDashboard();
   if(obraAtualId){
     const oAinda=obras.find(x=>x.id===obraAtualId);
-    if(oAinda)renderObraScreen();
+    if(oAinda){
+      // If on cronograma tab, only re-render the table, not the controls
+      if(obraAbaAtual==='cronograma'){
+        renderAbaCronograma(oAinda);
+        // Don't call renderCronControls - preserve user selections
+      } else {
+        renderObraScreen();
+      }
+    }
   }
 }
 
@@ -1613,6 +1621,8 @@ async function adicionarColunaCron(obraId){
 function renderCronControls(obraId){
   const el=document.getElementById('cron-ctrl-'+obraId);
   if(!el)return;
+  // Don't re-render if already has content (preserve user selections)
+  if(el.innerHTML.trim())return;
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const ano=new Date().getFullYear();
   el.innerHTML=`
@@ -1658,8 +1668,18 @@ async function gerarColunasCron(obraId){
     }
     m++;if(m>12){m=1;y++;}
   }
-    setSyncStatus('ok');await recarregarObras(true);
-  }catch(e){setSyncStatus('err');alert('Erro ao gerar colunas.');}
+    setSyncStatus('ok');
+    // Reload cron data
+    const{data:cc}=await sb.from('cronograma_colunas').select('*').order('ordem');
+    const{data:cv}=await sb.from('cronograma_valores').select('*');
+    cronColunas=cc||[];cronValores=cv||[];
+    const{data:ob}=await sb.from('obras').select('*').order('criado_em');
+    obras=ob||[];
+    // Re-render only the table, not the controls
+    const oAtual=obras.find(x=>x.id===obraId);
+    if(oAtual)renderAbaCronograma(oAtual);
+    renderObrasKanban();
+  }catch(e){setSyncStatus('err');alert('Erro ao gerar colunas: '+(e.message||e));}
 }
 
 async function limparColunasCron(obraId){
