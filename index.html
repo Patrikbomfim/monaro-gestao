@@ -1215,8 +1215,15 @@ async function salvarObra(abrirNovo=false){
     fecharModal('modal-obra');
     await recarregarObras();
     // Sync pendencias if status is approved+
-    const obraIdToSync=editObraId||(obras[obras.length-1]?.id);
-    if(obraIdToSync&&STATUS_APROVADOS.includes(dados.status))await sincronizarPendencias(obraIdToSync);
+    if(STATUS_APROVADOS.includes(dados.status)){
+      // Get the correct obraId - for new obras, find the one just created
+      let obraIdToSync=editObraId;
+      if(!obraIdToSync){
+        const{data:novaObra}=await sb.from('obras').select('id').eq('nome',dados.nome).order('criado_em',{ascending:false}).limit(1).single();
+        if(novaObra)obraIdToSync=novaObra.id;
+      }
+      if(obraIdToSync)await sincronizarPendencias(obraIdToSync);
+    }
     if(abrirNovo){abrirModalObra();}
   }catch(e){setSyncStatus('err');console.error('Erro salvarObra:',e);alert('Erro ao salvar: '+(e.message||e));} 
 }
@@ -2125,42 +2132,45 @@ function renderAniversariantes(){
 const STATUS_APROVADOS=['aprovado','executando','manutencao','finalizado'];
 
 async function sincronizarPendencias(obraId){
-  const o=obras.find(x=>x.id===obraId);
-  if(!o||!STATUS_APROVADOS.includes(o.status))return; // só sincroniza se aprovado+
+  // Fetch fresh data from DB to avoid stale cache issues
+  const{data:obraData}=await sb.from('obras').select('status').eq('id',obraId).single().catch(()=>({data:null}));
+  if(!obraData||!STATUS_APROVADOS.includes(obraData.status)){
+    console.log('Sync skip: obra not approved, status=',obraData?.status);
+    return;
+  }
 
-  const itensOrc=orcamentoItens.filter(it=>it.obra_id===obraId);
-  const itensPend=itensObra.filter(it=>it.obra_id===obraId&&it.orcamento_item_id);
+  const{data:itensOrc}=await sb.from('orcamento_itens').select('*').eq('obra_id',obraId).catch(()=>({data:[]}));
+  const{data:itensPend}=await sb.from('itens_obra').select('*').eq('obra_id',obraId).catch(()=>({data:[]}));
+  
+  if(!itensOrc||!itensOrc.length){console.log('Sync: no orc items');return;}
+  console.log('Sync: checking',itensOrc.length,'orc items');
 
   for(const orc of itensOrc){
     const tipo=catToTipo(orc.categoria);
-    if(!tipo)continue; // Monaro Administrativo e Insumos Locação não viram pendência... 
-    // Actually Insumos Locação vira compra
+    if(!tipo){console.log('Sync skip cat:',orc.categoria);continue;}
     
-    // Check if already has a pendencia linked to this orc item
-    const existing=itensPend.find(it=>it.orcamento_item_id===orc.id);
+    const existing=(itensPend||[]).find(it=>it.orcamento_item_id===orc.id);
     if(!existing){
-      // Create new pendencia
+      console.log('Sync: creating pendencia for',orc.servico);
       const dados={
         obra_id:obraId,
         orcamento_item_id:orc.id,
         tipo,
-        nome:orc.servico||orc.categoria,
+        nome:orc.servico||orc.categoria||'Sem nome',
         status:tipo==='compra'?'a-comprar':'sem-agenda',
         funcs:[],
         terceiro:null,
         inicio:null,
         fim:null,
       };
-      await sb.from('itens_obra').insert(dados).catch(e=>console.error('sync insert err',e));
+      const{error}=await sb.from('itens_obra').insert(dados);
+      if(error)console.error('sync insert err',error);
     } else {
-      // Update nome if orçamento changed and pendencia wasn't manually renamed
-      // Only update if nome matches original orc servico (not manually edited)
-      if(existing.nome===orc.servico||!existing.nome){
-        // nome matches - update if orc changed
-      }
-      // Don't touch manually edited pendencias
+      console.log('Sync: already exists for',orc.servico);
     }
   }
+  console.log('Sync complete');
+  await recarregarObras();
 }
 
 function catToTipo(categoria){
