@@ -1216,15 +1216,17 @@ async function excluirObra(){
   await recarregarObras();
 }
 
-async function recarregarObras(){
-  const[ob,oi,io,cc,cv]=await Promise.all([
-    sb.from('obras').select('*').order('criado_em').then(r=>r).catch(e=>{console.error('obras err',e);return{data:[]};}),
+async function recarregarObras(loadCron=false){
+  const promises=[
+    sb.from('obras').select('*').order('criado_em').then(r=>r).catch(()=>({data:[]})),
     sb.from('orcamento_itens').select('*').order('item').then(r=>r).catch(()=>({data:[]})),
     sb.from('itens_obra').select('*').order('criado_em').then(r=>r).catch(()=>({data:[]})),
     sb.from('cronograma_colunas').select('*').order('ordem').then(r=>r).catch(()=>({data:[]})),
-    sb.from('cronograma_valores').select('*').then(r=>r).catch(()=>({data:[]})),
-  ]);
-  obras=ob.data||[];orcamentoItens=oi.data||[];itensObra=io.data||[];cronColunas=cc.data||[];cronValores=cv.data||[];
+  ];
+  if(loadCron)promises.push(sb.from('cronograma_valores').select('*').then(r=>r).catch(()=>({data:[]})));
+  const[ob,oi,io,cc,cv]=await Promise.all(promises);
+  obras=ob.data||[];orcamentoItens=oi.data||[];itensObra=io.data||[];cronColunas=cc.data||[];
+  if(loadCron&&cv)cronValores=cv.data||[];
   renderObrasKanban();
   renderDashboard();
   if(obraAtualId){
@@ -1323,43 +1325,54 @@ function renderAbaOrcamento(o){
         <button class="btn btn-sm" style="background:var(--purple-light);color:var(--purple);border-color:var(--purple);font-size:11px" onclick="carregarTemplate('${o.id}','PINTURA E LAVAGEM PREDIAL')">Pintura e Lavagem</button>
         <button class="btn btn-sm" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue);font-size:11px" onclick="carregarTemplate('${o.id}','MANUTENÇÃO DE PASTILHAS')">Manutenção Pastilhas</button>
       </div>
-      <div style="font-size:12px;color:var(--text2)">BDI padrão: ${Math.round(bdi*100)}% &nbsp;|&nbsp; Alíquota NF: ${Math.round(aliq*100)}%</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)">
+        <span>BDI padrão:</span>
+        <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:4px;padding:2px 6px">
+          <input type="text" inputmode="decimal" value="${Math.round(bdi*100)}" onblur="atualizarBdiObra('${o.id}',this.value)" style="width:36px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" />
+          <span>%</span>
+        </div>
+        <span>Alíquota NF:</span>
+        <div style="display:flex;align-items:center;gap:2px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:4px;padding:2px 6px">
+          <input type="text" inputmode="decimal" value="${Math.round(aliq*100)}" onblur="atualizarAliqObra('${o.id}',this.value)" style="width:36px;border:none;background:transparent;font-size:12px;font-family:inherit;text-align:right" />
+          <span>%</span>
+        </div>
+      </div>
     </div>
-    <div style="overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);margin-bottom:16px">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:860px">
+    <div style="overflow-x:auto;border:1px solid var(--border2);border-radius:var(--radius-lg);background:var(--surface);margin-bottom:16px">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:860px;border:1px solid var(--border2)">
       <thead><tr style="background:var(--bg)">
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:32px;text-align:center">#</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:17%">Categoria</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border)">Serviço</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:55px;text-align:center">Unid</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:65px;text-align:right">Qtde</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:85px;text-align:right">Vlr unit</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:90px;text-align:right">Vlr total</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:60px;text-align:right">Alíq%</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:60px;text-align:right">BDI%</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:95px;text-align:right">Vl venda</th>
-        <th style="padding:7px 6px;border-bottom:0.5px solid var(--border);width:30px"></th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:32px;text-align:center;background:var(--bg)">#</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:17%;background:var(--bg)">Categoria</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);background:var(--bg)">Serviço</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:55px;text-align:center;background:var(--bg)">Unid</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:90px;text-align:right;background:var(--bg)">Qtde</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:100px;text-align:right;background:var(--bg)">Vlr unit</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:100px;text-align:right;background:var(--bg)">Vlr total</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:75px;text-align:center;background:var(--bg)">Alíquota</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:75px;text-align:center;background:var(--bg)">BDI</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:105px;text-align:right;background:var(--bg)">Vl venda</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:30px;background:var(--bg)"></th>
       </tr></thead>
       <tbody>
       ${linhas.map((it,i)=>{
         const prevCat=i>0?linhas[i-1].categoria:'';
         const borderTop=it.categoria&&it.categoria!==prevCat&&i>0?'border-top:2px solid var(--border2);':'';
         return`<tr style="${borderTop}">
-        <td style="padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:center;color:var(--text2)">${it.item||i+1}</td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)">
+        <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:center;color:var(--text2)">${it.item||i+1}</td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)">
           <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px">
             ${CATS_ORC.map(c=>`<option value="${c}" ${it.categoria===c?'selected':''}>${c}</option>`).join('')}
           </select>
         </td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input type="number" value="${it.quantidade||''}" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input type="number" value="${it.valor_unitario||''}" onblur="atualizarItemOrcNum('${it.id}','valor_unitario',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
-        <td style="padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:right;font-weight:500">${it._vt?'R$ '+it._vt.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input type="number" value="${it.aliquota_nf!=null?Math.round(it.aliquota_nf*100):Math.round(aliq*100)}" onblur="atualizarItemOrcPct('${it.id}','aliquota_nf',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
-        <td style="padding:3px 4px;border-bottom:0.5px solid var(--border)"><input type="number" value="${it.bdi!=null?Math.round(it.bdi*100):Math.round(bdi*100)}" onblur="atualizarItemOrcPct('${it.id}','bdi',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
-        <td style="padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--green);font-weight:500">${it._venda?'R$ '+it._venda.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
-        <td style="padding:3px;border-bottom:0.5px solid var(--border);text-align:center"><button onclick="excluirItemOrc('${it.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px">✕</button></td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input type="text" inputmode="decimal" value="${it.valor_unitario||''}" onblur="atualizarItemOrcNum('${it.id}','valor_unitario',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" placeholder="R$ 0,00" /></td>
+        <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;font-weight:500">${it._vt?it._vt.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}</td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><div style="display:flex;align-items:center;gap:2px"><input type="text" inputmode="decimal" value="${it.aliquota_nf!=null?Math.round(it.aliquota_nf*100):Math.round(aliq*100)}" onblur="atualizarItemOrcPct('${it.id}','aliquota_nf',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /><span style="font-size:11px;color:var(--text2)">%</span></div></td>
+        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><div style="display:flex;align-items:center;gap:2px"><input type="text" inputmode="decimal" value="${it.bdi!=null?Math.round(it.bdi*100):Math.round(bdi*100)}" onblur="atualizarItemOrcPct('${it.id}','bdi',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /><span style="font-size:11px;color:var(--text2)">%</span></div></td>
+        <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;color:var(--green);font-weight:500">${it._venda?'R$ '+it._venda.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
+        <td style="padding:3px;border:0.5px solid var(--border2);text-align:center"><button onclick="excluirItemOrc('${it.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px">✕</button></td>
       </tr>`;}).join('')}
       ${!linhas.length?'<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text3)">Clique em + Linha para começar</td></tr>':''}
       </tbody>
@@ -1397,6 +1410,16 @@ function renderAbaOrcamento(o){
     </div>`;
 }
 
+async function atualizarBdiObra(obraId,val){
+  const v=(parseFloat(val)||60)/100;
+  await sb.from('obras').update({bdi_padrao:v}).eq('id',obraId);
+  await recarregarObras();
+}
+async function atualizarAliqObra(obraId,val){
+  const v=(parseFloat(val)||12)/100;
+  await sb.from('obras').update({aliquota_padrao:v}).eq('id',obraId);
+  await recarregarObras();
+}
 async function adicionarLinhaOrc(obraId){
   const n=orcamentoItens.filter(it=>it.obra_id===obraId).length;
   await sb.from('orcamento_itens').insert({obra_id:obraId,item:n+1,categoria:CATS_ORC[0],servico:'',unidade:'',quantidade:0,valor_unitario:0,aliquota_nf:null,bdi:null});
@@ -1497,7 +1520,7 @@ async function adicionarColunaCron(obraId){
   const cols=cronColunas.filter(c=>c.obra_id===obraId);
   const h=new Date();
   await sb.from('cronograma_colunas').insert({obra_id:obraId,mes:h.getMonth()+1,ano:h.getFullYear(),ordem:cols.length+1});
-  await recarregarObras();
+  await recarregarObras(true);
 }
 async function excluirColunaCron(id){
   if(!confirm('Excluir esta coluna?'))return;
@@ -1510,7 +1533,7 @@ async function atualizarCronValor(itemId,colunaId,obraId,valor){
   const ex=cronValores.find(cv=>cv.item_id===itemId&&cv.coluna_id===colunaId);
   if(ex){await sb.from('cronograma_valores').update({valor:val}).eq('id',ex.id);}
   else{await sb.from('cronograma_valores').insert({obra_id:obraId,item_id:itemId,coluna_id:colunaId,valor:val});}
-  await recarregarObras();
+  await recarregarObras(true);
 }
 
 function renderAbaServicos(o,tipo){
