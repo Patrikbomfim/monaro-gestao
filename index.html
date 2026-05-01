@@ -628,20 +628,29 @@ document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==
 
 // ── LOAD ─────────────────────────────────────────────────
 async function carregarTudo(){
-  const[c,f,fn,co]=await Promise.all([
+  const[c,f,fn,co,ob,oi,io,cc]=await Promise.all([
     sb.from('clientes').select('*').order('condominio').then(r=>r).catch(()=>({data:[]})),
     sb.from('fornecedores').select('*').order('nome').then(r=>r).catch(()=>({data:[]})),
     sb.from('funcionarios').select('*').order('nome').then(r=>r).catch(()=>({data:[]})),
     sb.from('compromissos_agenda').select('*').order('data').then(r=>r).catch(()=>({data:[]})),
+    sb.from('obras').select('*').order('criado_em').then(r=>r).catch(()=>({data:[]})),
+    sb.from('orcamento_itens').select('*').order('item').then(r=>r).catch(()=>({data:[]})),
+    sb.from('itens_obra').select('*').order('criado_em').then(r=>r).catch(()=>({data:[]})),
+    sb.from('cronograma_colunas').select('*').order('ordem').then(r=>r).catch(()=>({data:[]})),
   ]);
   clientes=c.data||[];
   fornecedores=f.data||[];
   funcionarios=fn.data||[];
   compromissos=co.data||[];
+  obras=ob.data||[];
+  orcamentoItens=oi.data||[];
+  itensObra=io.data||[];
+  cronColunas=cc.data||[];
   renderClientes();
   renderFornecedores();
   renderFuncionarios();
   renderCompromissos();
+  try{renderObrasKanban();}catch(e){console.error('kanban err',e);}
   atualizarFiltroEstados();
   renderAniversariantes();
   renderDashboard();
@@ -1316,6 +1325,50 @@ function renderAbaOrcamento(o){
   const totC=resumo.reduce((a,r)=>a+r.custo,0),totN=resumo.reduce((a,r)=>a+r.nf,0),totB=resumo.reduce((a,r)=>a+r.bdi,0),totV=resumo.reduce((a,r)=>a+r.venda,0);
   const margem=totV>0?totB/totV:0,tempo=o.tempo_execucao||1;
 
+  // Build rows with category separators
+  let rowsHtml='';
+  let prevCat='';
+  linhas.forEach((it,i)=>{
+    if(it.categoria!==prevCat){
+      rowsHtml+=`<tr><td colspan="11" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">${it.categoria||''}</td></tr>`;
+      prevCat=it.categoria;
+    }
+    rowsHtml+=`<tr>
+      <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:center;color:var(--text2);width:32px">${it.item||i+1}</td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:17%">
+        <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px">
+          ${CATS_ORC.map(c=>`<option value="${c}" ${it.categoria===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:55px"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:90px"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:100px">
+        <input type="text" inputmode="decimal"
+          value="${it.valor_unitario?Number(it.valor_unitario).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
+          onfocus="this.dataset.raw=this.value;this.value=this.dataset.raw.replace(/[^0-9,]/g,'')"
+          onblur="const v=parseFloat(this.value.replace(',','.'));if(!isNaN(v)){atualizarItemOrcNum('${it.id}','valor_unitario',v);this.value=v.toLocaleString('pt-BR',{minimumFractionDigits:2})}"
+          style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+      </td>
+      <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;font-weight:500;width:100px">${it._vt?it._vt.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}</td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:75px">
+        <div style="display:flex;align-items:center;gap:2px">
+          <input type="text" inputmode="decimal" value="${it.aliquota_nf!=null?Math.round(it.aliquota_nf*100):Math.round(aliq*100)}" onblur="atualizarItemOrcPct('${it.id}','aliquota_nf',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+          <span style="font-size:11px;color:var(--text2)">%</span>
+        </div>
+      </td>
+      <td style="padding:3px 4px;border:0.5px solid var(--border2);width:75px">
+        <div style="display:flex;align-items:center;gap:2px">
+          <input type="text" inputmode="decimal" value="${it.bdi!=null?Math.round(it.bdi*100):Math.round(bdi*100)}" onblur="atualizarItemOrcPct('${it.id}','bdi',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
+          <span style="font-size:11px;color:var(--text2)">%</span>
+        </div>
+      </td>
+      <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;color:var(--green);font-weight:500;width:105px">${it._venda?it._venda.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}</td>
+      <td style="padding:3px;border:0.5px solid var(--border2);text-align:center;width:30px"><button onclick="excluirItemOrc('${it.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px">✕</button></td>
+    </tr>`;
+  });
+  if(!linhas.length){rowsHtml='<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text3)">Clique em + Linha ou use um template para começar</td></tr>';}
+
   document.getElementById('obra-content-orcamento').innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1340,55 +1393,21 @@ function renderAbaOrcamento(o){
       </div>
     </div>
     <div style="overflow-x:auto;border:1px solid var(--border2);border-radius:var(--radius-lg);background:var(--surface);margin-bottom:16px">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:860px;border:1px solid var(--border2)">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:860px">
       <thead><tr style="background:var(--bg)">
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:32px;text-align:center;background:var(--bg)">#</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:17%;background:var(--bg)">Categoria</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);background:var(--bg)">Serviço</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:55px;text-align:center;background:var(--bg)">Unid</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:90px;text-align:right;background:var(--bg)">Qtde</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:100px;text-align:right;background:var(--bg)">Vlr unit</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:100px;text-align:right;background:var(--bg)">Vlr total</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:75px;text-align:center;background:var(--bg)">Alíquota</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:75px;text-align:center;background:var(--bg)">BDI</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:105px;text-align:right;background:var(--bg)">Vl venda</th>
-        <th style="padding:7px 6px;border:0.5px solid var(--border2);width:30px;background:var(--bg)"></th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:center">#</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2)">Categoria</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2)">Serviço</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:center">Unid</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:right">Qtde</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:right">Vlr unit</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:right">Vlr total</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:center">Alíquota</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:center">BDI</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2);text-align:right">Vl venda</th>
+        <th style="padding:7px 6px;border:0.5px solid var(--border2)"></th>
       </tr></thead>
-      <tbody>
-      ${linhas.reduce((acc,it,i)=>{
-        const prevCat=i>0?linhas[i-1].categoria:'';
-        const catChanged=it.categoria&&it.categoria!==prevCat&&i>0;
-        if(catChanged){
-          acc+=`<tr><td colspan="11" style="padding:0;background:var(--border2);height:2px;border:none"></td></tr>
-          <tr><td colspan="11" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">${it.categoria}</td></tr>`;
-        } else if(i===0){
-          acc+=`<tr><td colspan="11" style="padding:4px 8px;background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);border:0.5px solid var(--border2)">${it.categoria||''}</td></tr>`;
-        }
-        acc+=`<tr>
-        <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:center;color:var(--text2)">${it.item||i+1}</td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)">
-          <select onchange="atualizarItemOrc('${it.id}','categoria',this.value)" style="width:100%;font-size:11px;border:none;background:transparent;font-family:inherit;padding:2px">
-            ${CATS_ORC.map(c=>`<option value="${c}" ${it.categoria===c?'selected':''}>${c}</option>`).join('')}
-          </select>
-        </td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.servico||''}" onblur="atualizarItemOrc('${it.id}','servico',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent" /></td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input value="${it.unidade||''}" onblur="atualizarItemOrc('${it.id}','unidade',this.value)" style="width:100%;border:none;font-size:11px;font-family:inherit;background:transparent;text-align:center" /></td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><input type="text" inputmode="decimal" value="${it.quantidade||''}" onblur="atualizarItemOrcNum('${it.id}','quantidade',this.value)" style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /></td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)">
-      <input type="text" inputmode="decimal" 
-        value="${it.valor_unitario?Number(it.valor_unitario).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}"
-        onfocus="this.value=it.valor_unitario||'';this.select()"
-        onblur="if(this.value){atualizarItemOrcNum('${it.id}','valor_unitario',this.value.replace(',','.'));this.value=Number(this.value.replace(/[^0-9,.]/g,'')).toLocaleString('pt-BR',{minimumFractionDigits:2})}"
-        style="width:100%;border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" />
-    </td>
-        <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;font-weight:500">${it._vt?it._vt.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}</td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><div style="display:flex;align-items:center;gap:2px"><input type="text" inputmode="decimal" value="${it.aliquota_nf!=null?Math.round(it.aliquota_nf*100):Math.round(aliq*100)}" onblur="atualizarItemOrcPct('${it.id}','aliquota_nf',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /><span style="font-size:11px;color:var(--text2)">%</span></div></td>
-        <td style="padding:3px 4px;border:0.5px solid var(--border2)"><div style="display:flex;align-items:center;gap:2px"><input type="text" inputmode="decimal" value="${it.bdi!=null?Math.round(it.bdi*100):Math.round(bdi*100)}" onblur="atualizarItemOrcPct('${it.id}','bdi',this.value)" style="width:calc(100% - 14px);border:none;font-size:12px;font-family:inherit;background:transparent;text-align:right" /><span style="font-size:11px;color:var(--text2)">%</span></div></td>
-        <td style="padding:5px 6px;border:0.5px solid var(--border2);text-align:right;color:var(--green);font-weight:500">${it._venda?'R$ '+it._venda.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
-        <td style="padding:3px;border:0.5px solid var(--border2);text-align:center"><button onclick="excluirItemOrc('${it.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px">✕</button></td>
-      </tr>`;}).join('')}
-      ${!linhas.length?'<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text3)">Clique em + Linha para começar</td></tr>':''}
-      </tbody>
+      <tbody>${rowsHtml}</tbody>
     </table></div>
     <div style="overflow-x:auto;border:0.5px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);max-width:680px">
     <table style="width:100%;border-collapse:collapse;font-size:12px">
@@ -1423,23 +1442,6 @@ function renderAbaOrcamento(o){
     </div>`;
 }
 
-// Tab navigation in orçamento table
-document.addEventListener('keydown',function(e){
-  if(e.key==='Tab'&&e.target.closest('#obra-content-orcamento')){
-    // Let default tab work, blur will save
-  }
-});
-
-async function atualizarBdiObra(obraId,val){
-  const v=(parseFloat(val)||60)/100;
-  await sb.from('obras').update({bdi_padrao:v}).eq('id',obraId);
-  await recarregarObras();
-}
-async function atualizarAliqObra(obraId,val){
-  const v=(parseFloat(val)||12)/100;
-  await sb.from('obras').update({aliquota_padrao:v}).eq('id',obraId);
-  await recarregarObras();
-}
 async function adicionarLinhaOrc(obraId){
   const n=orcamentoItens.filter(it=>it.obra_id===obraId).length;
   await sb.from('orcamento_itens').insert({obra_id:obraId,item:n+1,categoria:CATS_ORC[0],servico:'',unidade:'',quantidade:0,valor_unitario:0,aliquota_nf:null,bdi:null});
